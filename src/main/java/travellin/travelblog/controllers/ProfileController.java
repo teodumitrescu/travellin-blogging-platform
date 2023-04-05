@@ -4,6 +4,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import travellin.travelblog.dto.UserDto;
 import travellin.travelblog.entities.Profile;
 import travellin.travelblog.entities.User;
 import travellin.travelblog.services.ProfileService;
@@ -39,8 +41,8 @@ public class ProfileController {
 
 	@PostMapping
 	public ResponseEntity<Profile> createProfile(@RequestBody Profile profile) throws Exception {
-		User user = userService.getUserById(profile.getUser().getId());
-		if (user == null) {
+		UserDto userDto = userService.getUserById(profile.getUser().getId());
+		if (userDto == null) {
 			throw new IllegalArgumentException("Invalid user ID");
 		} else {
 			Profile createdProfile = profileService.createProfile(
@@ -48,7 +50,7 @@ public class ProfileController {
 					profile.getLastName(),
 					profile.getBio(),
 					profile.getProfileImageUrl(),
-					user
+					new User(userDto.getUsername(), userDto.getEmail(), userDto.getPassword()) //problema!
 			);
 			return ResponseEntity.status(HttpStatus.CREATED).body(createdProfile);
 		}

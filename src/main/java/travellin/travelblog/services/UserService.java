@@ -2,12 +2,14 @@ package travellin.travelblog.services;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import travellin.travelblog.entities.BlogPost;
-import travellin.travelblog.entities.User;
-import travellin.travelblog.repositories.UserRepository;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
+
+import travellin.travelblog.dto.UserDto;
+import travellin.travelblog.entities.User;
+import travellin.travelblog.repositories.UserRepository;
 
 @Service
 public class UserService {
@@ -19,63 +21,68 @@ public class UserService {
         this.userRepository = userRepository;
     }
 
-	public User createUser(String username, String email, String password) throws Exception {
-		if (userRepository.existsByUsername(username)) {
-			throw new Exception("Username already exists: " + username);
-		}
-		if (userRepository.existsByEmail(email)) {
-			throw new Exception("Email already exists: " + email);
-		}
-		User user = new User(username, email, password);
-		return userRepository.save(user);
-	}
-	
+    public UserDto createUser(UserDto userDto) throws Exception {
+        if (userRepository.existsByUsername(userDto.getUsername())) {
+            throw new Exception("Username already exists: " + userDto.getUsername());
+        }
+        if (userRepository.existsByEmail(userDto.getEmail())) {
+            throw new Exception("Email already exists: " + userDto.getEmail());
+        }
+        User user = new User(userDto.getUsername(), userDto.getEmail(), userDto.getPassword());
+        user = userRepository.save(user);
+        return new UserDto(user);
+    }
 
-    public User updateUserPassword(Long userId, String password) throws Exception {
+    public UserDto updateUserPassword(Long userId, String password) throws Exception {
         Optional<User> optionalUser = userRepository.findById(userId);
         if (optionalUser.isPresent()) {
             User user = optionalUser.get();
             user.setPassword(password);
-            return userRepository.save(user);
+            user = userRepository.save(user);
+            return new UserDto(user);
         } else {
             throw new Exception("User not found: " + userId);
         }
     }
 
-    public User getUserById(Long userId) throws Exception {
+    public UserDto getUserById(Long userId) throws Exception {
         Optional<User> optionalUser = userRepository.findById(userId);
         if (optionalUser.isPresent()) {
-            return optionalUser.get();
+            User user = optionalUser.get();
+            return new UserDto(user);
         } else {
             throw new Exception("User not found: " + userId);
         }
     }
 
-	public User getUserByUsername(String username) throws Exception {
-		Optional<User> userOptional = userRepository.findByUsername(username);
-		if (userOptional.isPresent()) {
-			return userOptional.get();
-		} else {
-			throw new Exception("User not found with username: " + username);
-		}
-	}
-
-	public List<User> getUsersByUsernameContaining(String username) {
-        return userRepository.findAllByUsernameContaining(username);
+    public UserDto getUserByUsername(String username) throws Exception {
+        Optional<User> userOptional = userRepository.findByUsername(username);
+        if (userOptional.isPresent()) {
+            User user = userOptional.get();
+            return new UserDto(user);
+        } else {
+            throw new Exception("User not found with username: " + username);
+        }
     }
 
-    public List<User> getAllUsers() {
-        return userRepository.findAll();
+    public List<UserDto> getUsersByUsernameContaining(String username) {
+        List<User> users = userRepository.findAllByUsernameContaining(username);
+        return users.stream().map(UserDto::new).collect(Collectors.toList());
     }
 
-	public void deleteUserById(Long userId) throws Exception {
-		Optional<User> optionalUser = userRepository.findById(userId);
+    public List<UserDto> getAllUsers() {
+        List<User> users = userRepository.findAll();
+        return users.stream().map(UserDto::new).collect(Collectors.toList());
+    }
+
+    public void deleteUserById(Long userId) throws Exception {
+        Optional<User> optionalUser = userRepository.findById(userId);
         if (optionalUser.isPresent()) {
-			userRepository.deleteById(userId);
+            userRepository.deleteById(userId);
         } else {
             throw new Exception("User not found: " + userId);
         }
-	}
+    }
 
     public boolean existsByUsername(String username) {
         return userRepository.existsByUsername(username);
@@ -85,28 +92,25 @@ public class UserService {
         return userRepository.existsByEmail(email);
     }
 
-    public List<BlogPost> getBlogPostsForUser(Long userId) throws Exception {
-        Optional<User> userOptional = userRepository.findById(userId);
-        if (userOptional.isPresent()) {
-            User user = userOptional.get();
-            List<BlogPost> posts = user.getPosts();
-            return posts;
-        } else {
-            throw new Exception("User not found: " + userId);
-        }
-    }
-
-    public User saveUser(User user) {
-        return userRepository.save(user);
-    }
-
-    public Optional<User> findByUsername(String username) {
-        return userRepository.findByUsername(username);
-    }
-
-    public Optional<User> findByEmail(String email) {
-        return userRepository.findByEmail(email);
-    }
-
+	public UserDto findByUsername(String username) throws Exception {
+		Optional<User> optionalUser = userRepository.findByUsername(username);
+		if (optionalUser.isPresent()) {
+			User user = optionalUser.get();
+			return new UserDto(user);
+		} else {
+            throw new Exception("User not found: " + username);
+		}
+	}
+	
+	public UserDto findByEmail(String email) throws Exception {
+		Optional<User> optionalUser = userRepository.findByEmail(email);
+		if (optionalUser.isPresent()) {
+			User user = optionalUser.get();
+			return new UserDto(user);
+		} else {
+            throw new Exception("User not found: " + email);
+		}
+	}
 }
+	
 
