@@ -1,0 +1,14 @@
+package travellin.travelblog.dto;
+
+import java.util.Set;
+
+public class UserRegistrationDto {
+
+    private String firstName;
+    private String lastName;
+    private String email;
+    private String password;
+    private Set<String> roles;
+
+    // getters and setters
+}
