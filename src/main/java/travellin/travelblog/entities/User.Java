@@ -11,8 +11,10 @@ import org.springframework.security.core.userdetails.UserDetails;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
+import lombok.Data;
 import travellin.travelblog.security.Role;
 
+@Data
 @Builder
 @AllArgsConstructor
 @Entity
@@ -49,58 +51,6 @@ public class User implements UserDetails {
         this.password = password;
     }
     
-    // Getters
-    
-    public Long getId() {
-        return id;
-    }
-    
-    public String getUsername() {
-        return username;
-    }
-    
-    public String getEmail() {
-        return email;
-    }
-    
-    public String getPassword() {
-        return password;
-    }
-    
-    public Profile getProfile() {
-        return profile;
-    }
-    
-    public List<BlogPost> getPosts() {
-        return posts;
-    }
-    
-    // Setters
-    
-    public void setId(Long id) {
-        this.id = id;
-    }
-    
-    public void setUsername(String username) {
-        this.username = username;
-    }
-    
-    public void setEmail(String email) {
-        this.email = email;
-    }
-    
-    public void setPassword(String password) {
-        this.password = password;
-    }
-    
-    public void setProfile(Profile profile) {
-        this.profile = profile;
-    }
-    
-    public void setPosts(List<BlogPost> posts) {
-        this.posts = posts;
-    }
-
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return List.of(new SimpleGrantedAuthority(role.name()));

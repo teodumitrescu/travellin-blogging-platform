@@ -9,9 +9,14 @@ import travellin.travelblog.repositories.UserRepository;
 import travellin.travelblog.security.Role;
 import travellin.travelblog.security.config.JwtService;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.stream.Collectors;
+
 // import org.springframework.http.HttpHeaders;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.GrantedAuthority;
 // import org.springframework.security.core.context.SecurityContextHolder;
 // import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -36,9 +41,34 @@ public class AuthenticationService {
         .role(Role.USER)
         .build();
     repository.save(user);
-    var jwtToken = jwtService.generateToken(user);
-    //var refreshToken = jwtService.generateRefreshToken(user);
-    //saveUserToken(savedUser, jwtToken);
+
+    Map<String, Object> claims = new HashMap<>();
+    claims.put("authorities", user.getAuthorities());
+    claims.put("userId", user.getId());
+
+    var jwtToken = jwtService.generateToken(claims, user);
+    return AuthenticationResponse.builder()
+        .token(jwtToken)
+        .build();
+  }
+
+  public AuthenticationResponse registerAdmin(RegisterRequest request) {
+    var user = User.builder()
+		.username(request.getUsername())
+        .email(request.getEmail())
+        .password(passwordEncoder.encode(request.getPassword()))
+        .role(Role.ADMIN)
+        .build();
+    repository.save(user);
+
+    Map<String, Object> claims = new HashMap<>();
+    claims.put("authorities", user.getAuthorities()
+    .stream()
+    .map(GrantedAuthority::getAuthority)
+    .collect(Collectors.toList()));
+    claims.put("userId", user.getId());
+
+    var jwtToken = jwtService.generateToken(claims, user);
     return AuthenticationResponse.builder()
         .token(jwtToken)
         .build();
@@ -53,7 +83,15 @@ public class AuthenticationService {
     );
     var user = repository.findByUsername(request.getUsername())
         .orElseThrow();
-    var jwtToken = jwtService.generateToken(user);
+
+    Map<String, Object> claims = new HashMap<>();
+    claims.put("authorities", user.getAuthorities()
+    .stream()
+    .map(GrantedAuthority::getAuthority)
+    .collect(Collectors.toList()));
+    claims.put("userId", user.getId());
+
+    var jwtToken = jwtService.generateToken(claims, user);
     //var refreshToken = jwtService.generateRefreshToken(user);
     //revokeAllUserTokens(user);
     //saveUserToken(user, jwtToken);
