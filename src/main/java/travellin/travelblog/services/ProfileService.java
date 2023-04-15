@@ -1,10 +1,13 @@
 package travellin.travelblog.services;
 
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import travellin.travelblog.entities.Profile;
 import travellin.travelblog.entities.User;
 import travellin.travelblog.repositories.ProfileRepository;
+import travellin.travelblog.repositories.UserRepository;
+import travellin.travelblog.dto.ProfileDto;
 
 import java.util.List;
 import java.util.Optional;
@@ -12,37 +15,62 @@ import java.util.Optional;
 @Service
 public class ProfileService {
 
-    @Autowired
     private ProfileRepository profileRepository;
+    private UserRepository userRepository;
 
-    public List<Profile> getAllProfiles() {
-        return profileRepository.findAll();
+    @Autowired
+    public ProfileService(ProfileRepository profileRepository, UserRepository userRepository) {
+        this.profileRepository = profileRepository;
+        this.userRepository = userRepository;
     }
 
-    public Optional<Profile> getProfileById(Long id) {
-        return profileRepository.findById(id);
+    public List<ProfileDto> getAllProfiles() {
+        List<Profile> profiles = profileRepository.findAll();
+        return ProfileDto.fromEntityList(profiles);
     }
 
-    public Profile createProfile(String firstName, String lastName, String bio, String profileImageUrl, User user) {
-        Profile profile = new Profile(firstName, lastName, bio, profileImageUrl, user);
-        return profileRepository.save(profile);
+    public Optional<ProfileDto> getProfileById(Long id) {
+        Optional<Profile> profile = profileRepository.findById(id);
+        if (profile.isPresent()) {
+            return Optional.of(ProfileDto.fromEntity(profile.get()));
+        }
+        return Optional.empty();
     }
 
-    public Profile updateProfile(Profile existingProfile, String firstName, String lastName, String bio, String profileImageUrl) {
-        if (firstName != null) {
-            existingProfile.setFirstName(firstName);
+    public Optional<ProfileDto> getProfileByUserId(Long userId) {
+        Optional<Profile> profile = profileRepository.findByUserId(userId);
+        if (profile.isPresent()) {
+            return Optional.of(ProfileDto.fromEntity(profile.get()));
         }
-        if (lastName != null) {
-            existingProfile.setLastName(lastName);
+        return Optional.empty();
+    }
+
+    public ProfileDto createProfile(ProfileDto profileDto, Long userId) {
+        Profile profile = new Profile();
+        BeanUtils.copyProperties(profileDto, profile);
+        User user = userRepository.findById(userId).get();
+        profile.setUser(user);
+        user.setProfile(profile);
+        Profile savedProfile = profileRepository.save(profile);
+        return ProfileDto.fromEntity(savedProfile);
+    }
+
+    public ProfileDto updateProfile(Long id, ProfileDto newProfile) {
+        Profile profileToUpdate = profileRepository.findById(id).get();
+        if (newProfile.getFirstName() != null) {
+            profileToUpdate.setFirstName(newProfile.getFirstName());
         }
-        if (bio != null) {
-            existingProfile.setBio(bio);
+        if (newProfile.getLastName() != null) {
+            profileToUpdate.setLastName(newProfile.getLastName());
         }
-        if (profileImageUrl != null) {
-            existingProfile.setProfileImageUrl(profileImageUrl);
+        if (newProfile.getBio() != null) {
+            profileToUpdate.setBio(newProfile.getBio());
         }
-        
-        return profileRepository.save(existingProfile);
+        if (newProfile.getProfileImageUrl() != null) {
+            profileToUpdate.setProfileImageUrl(newProfile.getProfileImageUrl());
+        }
+        Profile updatedProfile = profileRepository.save(profileToUpdate);
+        return ProfileDto.fromEntity(updatedProfile);
     }
 
     public void deleteProfileById(Long id) {

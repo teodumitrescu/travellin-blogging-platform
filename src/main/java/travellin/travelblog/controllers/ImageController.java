@@ -5,8 +5,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import travellin.travelblog.entities.Image;
+import travellin.travelblog.dto.ImageDto;
 import travellin.travelblog.services.ImageService;
+
 import java.util.List;
 
 @RestController
@@ -17,48 +18,42 @@ public class ImageController {
     private ImageService imageService;
 
     @GetMapping
-    public ResponseEntity<List<Image>> getAllImages() {
-        List<Image> images = imageService.getAllImages();
-        return ResponseEntity.ok(images);
+    public ResponseEntity<List<ImageDto>> getAllImages() {
+        List<ImageDto> imageDtos = imageService.getAllImages();
+        return ResponseEntity.ok(imageDtos);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Image> getImageById(@PathVariable Long id) throws Exception {
-        Image image = imageService.getImageById(id);
-        return ResponseEntity.ok(image);
+    public ResponseEntity<ImageDto> getImageById(@PathVariable Long id) throws Exception {
+        ImageDto imageDto = imageService.getImageById(id);
+        return ResponseEntity.ok(imageDto);
     }
 
-    @PostMapping
-    public ResponseEntity<Image> createImage(@RequestBody Image image) throws Exception {
-        Image createdImage = imageService.createImage(
-            image.getFilename(),
-            image.getUrl(),
-            image.getCaption(),
-            image.getAltText(),
-            image.getPost().getId()
-        );
+    @PostMapping("/{postId}")
+    public ResponseEntity<ImageDto> createImage(@PathVariable Long postId, @RequestBody ImageDto imageDto) throws Exception {
+        ImageDto createdImage = imageService.createImage(postId, imageDto);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdImage);
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<Image> updateImageById(
-        @PathVariable Long id,
-        @RequestBody Image image
-    ) throws Exception {
-        Image updatedImage = imageService.updateImage(
-            id,
-            image.getFilename(),
-            image.getUrl(),
-            image.getCaption(),
-            image.getAltText(),
-            image.getPost().getId()
-        );
-        return ResponseEntity.ok(updatedImage);
-    }
+    // @PutMapping("/{id}")
+    // public ResponseEntity<ImageDto> updateImageById(
+    //         @PathVariable Long id,
+    //         @RequestBody ImageDto imageDto
+    // ) throws Exception {
+    //     Image updatedImage = imageService.updateImage(
+    //             id,
+    //             imageDto.getFilename(),
+    //             imageDto.getUrl(),
+    //             imageDto.getCaption(),
+    //             imageDto.getAltText()
+    //     );
+    //     ImageDto updatedImageDto = ImageDto.fromEntity(updatedImage);
+    //     return ResponseEntity.ok(updatedImageDto);
+    // }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteImageById(@PathVariable Long id) throws Exception {
-        imageService.deleteImage(id);
-        return ResponseEntity.noContent().build();
-    }
+    // @DeleteMapping("/{id}")
+    // public ResponseEntity<Void> deleteImageById(@PathVariable Long id) throws Exception {
+    //     imageService.deleteImage(id);
+    //     return ResponseEntity.noContent().build();
+    // }
 }

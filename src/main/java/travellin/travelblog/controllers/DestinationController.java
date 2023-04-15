@@ -5,8 +5,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import travellin.travelblog.entities.BlogPost;
-import travellin.travelblog.entities.Destination;
+import travellin.travelblog.dto.DestinationDto;
 import travellin.travelblog.services.DestinationService;
 
 import java.util.List;
@@ -23,62 +22,51 @@ public class DestinationController {
     }
 
     @GetMapping
-    public ResponseEntity<List<Destination>> getAllDestinations() {
-        List<Destination> destinations = destinationService.getAllDestinations();
+    public ResponseEntity<List<DestinationDto>> getAllDestinations() {
+        List<DestinationDto> destinations = destinationService.getAllDestinations();
         return new ResponseEntity<>(destinations, HttpStatus.OK);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Destination> getDestinationById(@PathVariable Long id) throws Exception {
-        Destination destination = destinationService.getDestinationById(id);
+    public ResponseEntity<DestinationDto> getDestinationById(@PathVariable Long id) throws Exception {
+        DestinationDto destination = destinationService.getDestinationById(id);
         return new ResponseEntity<>(destination, HttpStatus.OK);
     }
 
-    @GetMapping("/{id}/posts")
-    public ResponseEntity<List<BlogPost>> getBlogPostsForDestination(@PathVariable Long id) throws Exception {
-        List<BlogPost> blogPosts = destinationService.getBlogPostsForDestination(id);
-        return new ResponseEntity<>(blogPosts, HttpStatus.OK);
-    }
+    // @GetMapping("/{id}/posts")
+    // public ResponseEntity<List<BlogPost>> getBlogPostsForDestination(@PathVariable Long id) throws Exception {
+    //     List<BlogPost> blogPosts = destinationService.getBlogPostsForDestination(id);
+    //     return new ResponseEntity<>(blogPosts, HttpStatus.OK);
+    // }
 
     @GetMapping("/country/{country}")
-    public ResponseEntity<List<Destination>> getDestinationsByCountry(@PathVariable String country) {
-        List<Destination> destinations = destinationService.getDestinationsByCountry(country);
+    public ResponseEntity<List<DestinationDto>> getDestinationsByCountry(@PathVariable String country) {
+        List<DestinationDto> destinations = destinationService.getDestinationsByCountry(country);
         return new ResponseEntity<>(destinations, HttpStatus.OK);
     }
 
     @GetMapping("/region/{region}")
-    public ResponseEntity<List<Destination>> getDestinationsByRegion(@PathVariable String region) {
-        List<Destination> destinations = destinationService.getDestinationsByRegion(region);
+    public ResponseEntity<List<DestinationDto>> getDestinationsByRegion(@PathVariable String region) {
+        List<DestinationDto> destinations = destinationService.getDestinationsByRegion(region);
         return new ResponseEntity<>(destinations, HttpStatus.OK);
     }
 
     @GetMapping("/search")
-    public ResponseEntity<List<Destination>> searchDestinations(@RequestParam String keyword) {
-        List<Destination> destinations = destinationService.searchDestinations(keyword);
+    public ResponseEntity<List<DestinationDto>> searchDestinations(@RequestParam String keyword) {
+        List<DestinationDto> destinations = destinationService.searchDestinations(keyword);
         return new ResponseEntity<>(destinations, HttpStatus.OK);
     }
 
     @PostMapping
-    public ResponseEntity<Destination> createDestination(
-            @RequestParam String name,
-            @RequestParam String description,
-            @RequestParam String country,
-            @RequestParam String region
-    ) {
-        Destination destination = destinationService.createDestination(name, description, country, region);
-        return new ResponseEntity<>(destination, HttpStatus.CREATED);
+    public ResponseEntity<DestinationDto> createDestination(@RequestBody DestinationDto destinationDto) {
+        DestinationDto createdDestination = destinationService.createDestination(destinationDto);
+        return new ResponseEntity<>(createdDestination, HttpStatus.CREATED);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Destination> updateDestination(
-            @PathVariable Long id,
-            @RequestParam String name,
-            @RequestParam String description,
-            @RequestParam String country,
-            @RequestParam String region
-    ) throws Exception {
-        Destination destination = destinationService.updateDestination(id, name, description, country, region);
-        return new ResponseEntity<>(destination, HttpStatus.OK);
+    public ResponseEntity<DestinationDto> updateDestination(@PathVariable Long id, @RequestBody DestinationDto destinationDto) throws Exception {
+        DestinationDto updatedDestination = destinationService.updateDestination(id, destinationDto);
+        return new ResponseEntity<>(updatedDestination, HttpStatus.OK);
     }
 
     @DeleteMapping("/{id}")

@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
 import travellin.travelblog.dto.UserDto;
+import travellin.travelblog.security.config.JwtService;
 import travellin.travelblog.services.UserService;
 
 import java.util.List;
@@ -17,21 +18,12 @@ import java.util.List;
 public class UserController {
 
     private final UserService userService;
+    private final JwtService jwtService;
 
     @Autowired
-    public UserController(UserService userService) {
+    public UserController(UserService userService, JwtService jwtService) {
         this.userService = userService;
-    }
-
-    @PostMapping("")
-    @ResponseStatus(HttpStatus.CREATED)
-    public ResponseEntity<UserDto> createUser(@RequestBody UserDto userDto) {
-        try {
-            UserDto userResponse = userService.createUser(userDto);
-            return ResponseEntity.status(HttpStatus.CREATED).body(userResponse);
-        } catch (Exception e) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "Username or email already exists", e);
-        }
+        this.jwtService = jwtService;
     }
 
     @GetMapping("/{id}")
@@ -61,16 +53,22 @@ public class UserController {
     }
 
     @PutMapping("/{id}/password")
-    public ResponseEntity<UserDto> updateUserPassword(@PathVariable Long id, @RequestParam String password) {
-        try {
-            UserDto userResponse = userService.updateUserPassword(id, password);
-            return ResponseEntity.ok(userResponse);
-        } catch (Exception e) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found", e);
-        }
+    public ResponseEntity<?> updateUserPassword(@PathVariable Long id, @RequestParam String password, 
+                                  @RequestHeader("Authorization") String authorizationHeader) throws Exception {
+    String token = authorizationHeader.replace("Bearer ", "");
+    Long userId = jwtService.extractClaim(token, claims -> claims.get("userId", Long.class));
+
+    if (id.equals(userId)) {
+        UserDto userResponse = userService.updateUserPassword(id, password);
+        return ResponseEntity.ok(userResponse);
+    } else {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
     }
+}
+
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<Void> deleteUserById(@PathVariable Long id) {
         try {
             userService.deleteUserById(id);

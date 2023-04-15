@@ -20,4 +20,6 @@ public interface BlogPostRepository extends JpaRepository<BlogPost, Long> {
     @Query("SELECT bp FROM BlogPost bp WHERE bp.destination = :destination")
     List<BlogPost> findByDestination(Destination destination);
 
+    List<BlogPost> findByAuthorId(Long id);
+
 }

@@ -3,13 +3,12 @@ package travellin.travelblog.controllers;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-import travellin.travelblog.dto.UserDto;
-import travellin.travelblog.entities.Profile;
-import travellin.travelblog.entities.User;
+import travellin.travelblog.dto.ProfileDto;
+import travellin.travelblog.security.config.JwtService;
 import travellin.travelblog.services.ProfileService;
-import travellin.travelblog.services.UserService;
 
 import java.util.List;
 import java.util.Optional;
@@ -18,20 +17,35 @@ import java.util.Optional;
 @RequestMapping("/profiles")
 public class ProfileController {
 
-    @Autowired
     private ProfileService profileService;
+    private JwtService jwtService;
 
     @Autowired
-    private UserService userService;
+    public ProfileController(ProfileService profileService, JwtService jwtService) {
+        this.profileService = profileService;
+        this.jwtService = jwtService;
+    }
 
     @GetMapping
-    public List<Profile> getAllProfiles() {
+    @PreAuthorize("hasAuthority('ADMIN')")
+    public List<ProfileDto> getAllProfiles() {
         return profileService.getAllProfiles();
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Profile> getProfileById(@PathVariable Long id) {
-        Optional<Profile> optionalProfile = profileService.getProfileById(id);
+    //@PreAuthorize("hasAnyAuthority('USER', 'ADMIN')")
+    public ResponseEntity<?> getProfileById(@PathVariable Long id) {
+        Optional<ProfileDto> optionalProfile = profileService.getProfileById(id);
+        if (optionalProfile.isPresent()) {
+            return ResponseEntity.ok(optionalProfile);
+        } else {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    @GetMapping("/user={userId}")
+    public ResponseEntity<?> getProfileByUserId(@PathVariable Long userId) {
+        Optional<ProfileDto> optionalProfile = profileService.getProfileByUserId(userId);
         if (optionalProfile.isPresent()) {
             return ResponseEntity.ok(optionalProfile.get());
         } else {
@@ -39,44 +53,31 @@ public class ProfileController {
         }
     }
 
-	@PostMapping
-	public ResponseEntity<Profile> createProfile(@RequestBody Profile profile) throws Exception {
-		UserDto userDto = userService.getUserById(profile.getUser().getId());
-		if (userDto == null) {
-			throw new IllegalArgumentException("Invalid user ID");
-		} else {
-			Profile createdProfile = profileService.createProfile(
-					profile.getFirstName(),
-					profile.getLastName(),
-					profile.getBio(),
-					profile.getProfileImageUrl(),
-					new User(userDto.getUsername(), userDto.getEmail(), userDto.getPassword()) //problema!
-			);
-			return ResponseEntity.status(HttpStatus.CREATED).body(createdProfile);
-		}
-	}
-	
-	
+    @PostMapping("/create")
+    public ResponseEntity<ProfileDto> createProfile(@RequestBody ProfileDto profileDto,  @RequestHeader("Authorization") String authorizationHeader) throws Exception {
+        String token = authorizationHeader.replace("Bearer ", "");
+        Long userId = jwtService.extractClaim(token, claims -> claims.get("userId", Long.class));
+
+        ProfileDto createdProfile = profileService.createProfile(profileDto, userId);
+        return ResponseEntity.status(HttpStatus.CREATED).body(createdProfile);
+    
+    }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Profile> updateProfileById(@PathVariable Long id, @RequestBody Profile profile) {
-        Optional<Profile> optionalProfile = profileService.getProfileById(id);
+    public ResponseEntity<ProfileDto> updateProfileById(@PathVariable Long id, @RequestBody ProfileDto profileDto) {
+        Optional<ProfileDto> optionalProfile = profileService.getProfileById(id);
         if (optionalProfile.isPresent()) {
-            Profile existingProfile = optionalProfile.get();
-            existingProfile.setFirstName(profile.getFirstName());
-            existingProfile.setLastName(profile.getLastName());
-            existingProfile.setBio(profile.getBio());
-            existingProfile.setProfileImageUrl(profile.getProfileImageUrl());
-			Profile updatedProfile = profileService.updateProfile(existingProfile, profile.getFirstName(), profile.getLastName(), profile.getBio(), profile.getProfileImageUrl());
-            return ResponseEntity.ok(updatedProfile);
+            ProfileDto updatedProfileDto = profileService.updateProfile(id, profileDto);
+            return ResponseEntity.ok(updatedProfileDto);
         } else {
             return ResponseEntity.notFound().build();
         }
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<Void> deleteProfileById(@PathVariable Long id) {
-        Optional<Profile> optionalProfile = profileService.getProfileById(id);
+        Optional<ProfileDto> optionalProfile = profileService.getProfileById(id);
         if (optionalProfile.isPresent()) {
             profileService.deleteProfileById(id);
             return ResponseEntity.noContent().build();

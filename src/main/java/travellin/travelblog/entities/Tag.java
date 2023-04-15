@@ -3,7 +3,13 @@ package travellin.travelblog.entities;
 import java.util.ArrayList;
 import java.util.List;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
 
+@Data
+@Builder
+@AllArgsConstructor
 @Entity
 @Table(name = "tags")
 public class Tag {
@@ -20,32 +26,7 @@ public class Tag {
 
     public Tag() {}
 
-    public Tag(String name, String description) {
+    public Tag(String name) {
         this.name = name;
-    }
-
-    // getters and setters
-	public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public List<BlogPost> getPosts() {
-        return posts;
-    }
-
-    public void setPosts(List<BlogPost> posts) {
-        this.posts = posts;
     }
 }

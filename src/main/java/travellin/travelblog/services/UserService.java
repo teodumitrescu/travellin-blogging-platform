@@ -10,15 +10,19 @@ import java.util.stream.Collectors;
 import travellin.travelblog.dto.UserDto;
 import travellin.travelblog.entities.User;
 import travellin.travelblog.repositories.UserRepository;
+import org.springframework.security.crypto.password.PasswordEncoder;
+
 
 @Service
 public class UserService {
 
     private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
 
     @Autowired
-    public UserService(UserRepository userRepository) {
+    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     public UserDto createUser(UserDto userDto) throws Exception {
@@ -37,7 +41,7 @@ public class UserService {
         Optional<User> optionalUser = userRepository.findById(userId);
         if (optionalUser.isPresent()) {
             User user = optionalUser.get();
-            user.setPassword(password);
+            user.setPassword(passwordEncoder.encode(password));
             user = userRepository.save(user);
             return new UserDto(user);
         } else {
@@ -52,6 +56,16 @@ public class UserService {
             return new UserDto(user);
         } else {
             throw new Exception("User not found: " + userId);
+        }
+    }
+
+    public User getUserEntryById(Long userId) throws Exception {
+        Optional<User> optionalUser = userRepository.findById(userId);
+        if(optionalUser.isPresent()) {
+            return optionalUser.get();
+        } else {
+            throw new Exception("User not found: " + userId);
+
         }
     }
 

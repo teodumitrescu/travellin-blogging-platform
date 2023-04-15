@@ -6,15 +6,10 @@ import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
-import travellin.travelblog.entities.BlogPost;
+import travellin.travelblog.dto.BlogPostDto;
+import travellin.travelblog.dto.TagDto;
 import travellin.travelblog.entities.Tag;
 import travellin.travelblog.services.TagService;
 
@@ -30,21 +25,23 @@ public class TagController {
     }
 
     @GetMapping("")
-    public List<Tag> getAllTags() {
-        return tagService.getAllTags();
+    public List<TagDto> getAllTags() {
+        List<TagDto> tags = tagService.getAllTags();
+        return tags;
     }
 
     @PostMapping("")
-    public Tag createTag(@RequestBody Tag tag) {
-        return tagService.createTag(tag);
+    public TagDto createTag(@RequestBody TagDto tagDto) {
+        TagDto createdTag = tagService.createTag(tagDto);
+        return createdTag;
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Tag> getTagById(@PathVariable Long id) {
-        Optional<Tag> tagOptional = tagService.getTagById(id);
+    public ResponseEntity<TagDto> getTagById(@PathVariable Long id) {
+        Optional<TagDto> tagOptional = tagService.getTagById(id);
         if (tagOptional.isPresent()) {
-            Tag tag = tagOptional.get();
-            return ResponseEntity.ok(tag);
+            TagDto tagDto = tagOptional.get();
+            return ResponseEntity.ok(tagDto);
         } else {
             return ResponseEntity.notFound().build();
         }
@@ -60,15 +57,15 @@ public class TagController {
         }
     }
 
-    @GetMapping("/{id}/posts")
-    public List<BlogPost> getAllBlogPostsByTag(@PathVariable Long id) {
-        Optional<Tag> tagOptional = tagService.getTagById(id);
-        if (tagOptional.isPresent()) {
-            Tag tag = tagOptional.get();
-            return tag.getPosts();
-        } else {
-            return Collections.emptyList();
-        }
-    }
+    // @GetMapping("/{id}/posts")
+    // public List<BlogPostDto> getAllBlogPostsByTag(@PathVariable Long id) {
+    //     Optional<Tag> tagOptional = tagService.getTagById(id);
+    //     if (tagOptional.isPresent()) {
+    //         Tag tag = tagOptional.get();
+    //         List<BlogPostDto> blogPostDtos = BlogPostDto.fromEntityList(tag.getPosts());
+    //         return blogPostDtos;
+    //     } else {
+    //         return Collections.emptyList();
+    //     }
+    // }
 }
-

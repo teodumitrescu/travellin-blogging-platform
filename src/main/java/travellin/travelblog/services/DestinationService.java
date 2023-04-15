@@ -3,12 +3,13 @@ package travellin.travelblog.services;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Service;
+import travellin.travelblog.dto.DestinationDto;
 import travellin.travelblog.entities.BlogPost;
 import travellin.travelblog.entities.Destination;
 import travellin.travelblog.repositories.DestinationRepository;
 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class DestinationService {
@@ -19,59 +20,73 @@ public class DestinationService {
     public DestinationService(DestinationRepository destinationRepository) {
         this.destinationRepository = destinationRepository;
     }
-
-    public Destination createDestination(String name, String description, String country, String region) {
-        Destination destination = new Destination(name, description, country, region);
-        return destinationRepository.save(destination);
+    
+    public DestinationDto createDestination(DestinationDto destinationDTO) {
+        Destination destination = new Destination(
+                destinationDTO.getName(),
+                destinationDTO.getDescription(),
+                destinationDTO.getCountry(),
+                destinationDTO.getRegion()
+        );
+        List<BlogPost> emptyBlogPostList = new ArrayList<>();
+        destination.setPosts(emptyBlogPostList);
+        Destination createdDestination = destinationRepository.save(destination);
+        return DestinationDto.fromEntity(createdDestination);
     }
-
-    public Destination updateDestination(Long id, String name, String description, String country, String region) throws Exception {
+    
+    public DestinationDto updateDestination(Long id, DestinationDto destinationDTO) throws Exception {
         Destination destination = destinationRepository.findById(id)
                 .orElseThrow(() -> new Exception("Destination not found with id " + id));
-
-        destination.setName(name);
-        destination.setDescription(description);
-        destination.setCountry(country);
-        destination.setRegion(region);
-
-        return destinationRepository.save(destination);
+    
+        destination.setName(destinationDTO.getName());
+        destination.setDescription(destinationDTO.getDescription());
+        destination.setCountry(destinationDTO.getCountry());
+        destination.setRegion(destinationDTO.getRegion());
+    
+        Destination savedDestination = destinationRepository.save(destination);
+        return DestinationDto.fromEntity(savedDestination);
     }
-
-    public List<Destination> getAllDestinations() {
-        return destinationRepository.findAll();
+    
+    public List<DestinationDto> getAllDestinations() {
+        List<Destination> destinations = destinationRepository.findAll();
+        return DestinationDto.fromEntityList(destinations);
     }
-
-    public Destination getDestinationById(Long id) throws Exception {
-        return destinationRepository.findById(id)
+    
+    public DestinationDto getDestinationById(Long id) throws Exception {
+        Destination destination = destinationRepository.findById(id)
                 .orElseThrow(() -> new Exception("Destination not found with id " + id));
+        return DestinationDto.fromEntity(destination);
     }
-
-    public List<BlogPost> getBlogPostsForDestination(Long destinationId) throws Exception {
-        Optional<Destination> destination = destinationRepository.findById(destinationId);
-        if (destination.isPresent()) {
-            return destination.get().getPosts();
-        } else {
-            throw new Exception("Destination not found with id " + destinationId);
-        }
+    
+    // public List<BlogPost> getBlogPostsForDestination(Long destinationId) throws Exception {
+    //     Optional<Destination> destination = destinationRepository.findById(destinationId);
+    //     if (destination.isPresent()) {
+    //         return destination.get().getPosts();
+    //     } else {
+    //         throw new Exception("Destination not found with id " + destinationId);
+    //     }
+    // }
+    
+    public List<DestinationDto> getDestinationsByCountry(String country) {
+        List<Destination> destinations = destinationRepository.findByCountry(country);
+        return DestinationDto.fromEntityList(destinations);
     }
-
-    public List<Destination> getDestinationsByCountry(String country) {
-        return destinationRepository.findByCountry(country);
+    
+    public List<DestinationDto> getDestinationsByRegion(String region) {
+        List<Destination> destinations = destinationRepository.findByRegion(region);
+        return DestinationDto.fromEntityList(destinations);
     }
-
-    public List<Destination> getDestinationsByRegion(String region) {
-        return destinationRepository.findByRegion(region);
+    
+    public List<DestinationDto> searchDestinations(String keyword) {
+        List<Destination> destinations = destinationRepository.findByNameContainingIgnoreCase(keyword);
+        return DestinationDto.fromEntityList(destinations);
     }
-
-    public List<Destination> searchDestinations(String keyword) {
-        return destinationRepository.findByNameContainingIgnoreCase(keyword);
-    }
-
+    
     public void deleteDestination(Long id) throws Exception {
         try {
             Destination destination = destinationRepository.findById(id)
                     .orElseThrow(() -> new Exception("Destination not found with id " + id));
-
+    
             destinationRepository.delete(destination);
         } catch (DataAccessException e) {
             throw new Exception("Error deleting destination with id " + id, e);
