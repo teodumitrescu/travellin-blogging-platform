@@ -32,7 +32,7 @@ public class UserController {
             UserDto userResponse = userService.getUserById(id);
             return ResponseEntity.ok(userResponse);
         } catch (Exception e) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found", e);
+            return ResponseEntity.notFound().build();
         }
     }
 
@@ -40,7 +40,7 @@ public class UserController {
     public ResponseEntity<List<UserDto>> getUsersByUsernameContaining(@RequestParam String username) {
         List<UserDto> usersResponse = userService.getUsersByUsernameContaining(username);
         if (usersResponse.isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No users found with the provided username");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(usersResponse);
         }
         return ResponseEntity.ok(usersResponse);
     }
