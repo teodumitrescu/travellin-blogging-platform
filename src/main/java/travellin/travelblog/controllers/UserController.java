@@ -27,16 +27,18 @@ public class UserController {
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasAnyAuthority('USER', 'ADMIN')")
     public ResponseEntity<UserDto> getUserById(@PathVariable Long id) {
         try {
             UserDto userResponse = userService.getUserById(id);
             return ResponseEntity.ok(userResponse);
         } catch (Exception e) {
-            return ResponseEntity.notFound().build();
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
     }
 
     @GetMapping("/search")
+    @PreAuthorize("hasAnyAuthority('USER', 'ADMIN')")
     public ResponseEntity<List<UserDto>> getUsersByUsernameContaining(@RequestParam String username) {
         List<UserDto> usersResponse = userService.getUsersByUsernameContaining(username);
         if (usersResponse.isEmpty()) {
@@ -53,6 +55,7 @@ public class UserController {
     }
 
     @PutMapping("/{id}/password")
+    @PreAuthorize("hasAnyAuthority('USER', 'ADMIN')")
     public ResponseEntity<?> updateUserPassword(@PathVariable Long id, @RequestParam String password, 
                                   @RequestHeader("Authorization") String authorizationHeader) throws Exception {
     String token = authorizationHeader.replace("Bearer ", "");
@@ -74,7 +77,7 @@ public class UserController {
             userService.deleteUserById(id);
             return ResponseEntity.noContent().build();
         } catch (Exception e) {
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to delete user with id: " + id + ". User not found", e);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
     }
 }
