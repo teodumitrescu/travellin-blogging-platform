@@ -1,6 +1,5 @@
 package travellin.travelblog.controllers;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -8,9 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import travellin.travelblog.dto.BlogPostDto;
 import travellin.travelblog.dto.TagDto;
-import travellin.travelblog.entities.Tag;
 import travellin.travelblog.services.TagService;
 
 @RestController

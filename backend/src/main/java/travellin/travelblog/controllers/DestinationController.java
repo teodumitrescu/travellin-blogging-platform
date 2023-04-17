@@ -57,9 +57,9 @@ public class DestinationController {
         return new ResponseEntity<>(destinations, HttpStatus.OK);
     }
 
-    @PostMapping
-    public ResponseEntity<DestinationDto> createDestination(@RequestBody DestinationDto destinationDto) {
-        DestinationDto createdDestination = destinationService.createDestination(destinationDto);
+    @PostMapping("/{postId}")
+    public ResponseEntity<DestinationDto> createDestination(@PathVariable Long postId, @RequestBody DestinationDto destinationDto) {
+        DestinationDto createdDestination = destinationService.createDestination(postId, destinationDto);
         return new ResponseEntity<>(createdDestination, HttpStatus.CREATED);
     }
 

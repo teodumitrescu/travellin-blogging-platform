@@ -27,8 +27,6 @@ public class ImageService {
         this.blogPostRepository = blogPostRepository;
     }
 
-    @Autowired
-    private BlogPostService blogPostService;
 
     public List<ImageDto> getAllImages() {
         List<Image> images = imageRepository.findAll();
@@ -43,22 +41,24 @@ public class ImageService {
             Image image = imageOptional.get();
             return ImageDto.fromEntity(image);
         } else {
-            throw new Exception("Image not found:" + id);
+            throw new Exception("Image not found: " + id);
         }
     }
 
     public ImageDto createImage(Long blogPostId, ImageDto imageDto) throws Exception {
-        BlogPost post = blogPostRepository.findById(blogPostId).get();
-        Image image = new Image(
+        Optional<BlogPost> postOptional = blogPostRepository.findById(blogPostId);
+        if (postOptional.isPresent()) {
+            Image image = new Image(
                 imageDto.getFilename(),
                 imageDto.getUrl(),
                 imageDto.getCaption(),
                 imageDto.getAltText(),
-                post
-        );
+                postOptional.get());
         Image createdImage = imageRepository.save(image);
-        blogPostService.addImageToBlogPost(blogPostId, createdImage.getId());
         return ImageDto.fromEntity(createdImage);
+        } else {
+            throw new Exception("Post not found:  " + blogPostId);
+        }
     }
 
     public ImageDto updateImage(Long id, ImageDto imageDto) throws Exception {
@@ -91,22 +91,14 @@ public class ImageService {
         }
     }
 
-    // public void deleteImage(Long id) throws Exception {
-    //     Optional<Image> imageOptional = imageRepository.findById(id);
-    //     if (imageOptional.isPresent()) {
-    //         Image image = imageOptional.get();
-    //         BlogPost post = image.getPost();
-
-    //         // Remove image from blog post
-    //         List<Image> images = post.getImages();
-    //         images.remove(image);
-    //         post.setImages(images);
-    //         blogPostService.updateBlogPost(post.getId(), BlogPostDto.fromEntity(post));
-
-    //         imageRepository.delete(image);
-    //     } else {
-    //         throw new Exception("Image not found:" + id);
-    //     }
-    // }
+    public void deleteImage(Long id) throws Exception {
+        Optional<Image> imageOptional = imageRepository.findById(id);
+        if (imageOptional.isPresent()) {
+            Image image = imageOptional.get();
+            imageRepository.delete(image);
+        } else {
+            throw new Exception("Image not found:" + id);
+        }
+    }
 
 }

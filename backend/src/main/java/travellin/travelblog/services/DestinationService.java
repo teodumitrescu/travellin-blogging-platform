@@ -3,9 +3,11 @@ package travellin.travelblog.services;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Service;
+
 import travellin.travelblog.dto.DestinationDto;
 import travellin.travelblog.entities.BlogPost;
 import travellin.travelblog.entities.Destination;
+import travellin.travelblog.repositories.BlogPostRepository;
 import travellin.travelblog.repositories.DestinationRepository;
 
 import java.util.ArrayList;
@@ -15,21 +17,24 @@ import java.util.List;
 public class DestinationService {
 
     private final DestinationRepository destinationRepository;
+    private final BlogPostRepository blogPostRepository;
 
     @Autowired
-    public DestinationService(DestinationRepository destinationRepository) {
+    public DestinationService(DestinationRepository destinationRepository, BlogPostRepository blogPostRepository) {
         this.destinationRepository = destinationRepository;
+        this.blogPostRepository = blogPostRepository;
     }
     
-    public DestinationDto createDestination(DestinationDto destinationDTO) {
+    public DestinationDto createDestination(Long postId, DestinationDto destinationDTO) {
         Destination destination = new Destination(
                 destinationDTO.getName(),
                 destinationDTO.getDescription(),
                 destinationDTO.getCountry(),
                 destinationDTO.getRegion()
         );
-        List<BlogPost> emptyBlogPostList = new ArrayList<>();
-        destination.setPosts(emptyBlogPostList);
+        List<BlogPost> blogPostList = new ArrayList<>();
+        blogPostList.add(blogPostRepository.findById(postId).get());
+        destination.setPosts(blogPostList);
         Destination createdDestination = destinationRepository.save(destination);
         return DestinationDto.fromEntity(createdDestination);
     }

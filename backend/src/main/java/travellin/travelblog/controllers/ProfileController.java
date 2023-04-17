@@ -28,12 +28,12 @@ public class ProfileController {
 
     @GetMapping
     @PreAuthorize("hasAuthority('ADMIN')")
-    public List<ProfileDto> getAllProfiles() {
-        return profileService.getAllProfiles();
+    public ResponseEntity<List<ProfileDto>> getAllProfiles() {
+        return ResponseEntity.ok(profileService.getAllProfiles());
     }
 
     @GetMapping("/{id}")
-    //@PreAuthorize("hasAnyAuthority('USER', 'ADMIN')")
+    @PreAuthorize("hasAnyAuthority('USER', 'ADMIN')")
     public ResponseEntity<?> getProfileById(@PathVariable Long id) {
         Optional<ProfileDto> optionalProfile = profileService.getProfileById(id);
         if (optionalProfile.isPresent()) {
@@ -44,6 +44,7 @@ public class ProfileController {
     }
 
     @GetMapping("/user={userId}")
+    @PreAuthorize("hasAnyAuthority('USER', 'ADMIN')")
     public ResponseEntity<?> getProfileByUserId(@PathVariable Long userId) {
         Optional<ProfileDto> optionalProfile = profileService.getProfileByUserId(userId);
         if (optionalProfile.isPresent()) {
@@ -54,16 +55,16 @@ public class ProfileController {
     }
 
     @PostMapping("/create")
+    @PreAuthorize("hasAnyAuthority('USER', 'ADMIN')")
     public ResponseEntity<ProfileDto> createProfile(@RequestBody ProfileDto profileDto,  @RequestHeader("Authorization") String authorizationHeader) throws Exception {
         String token = authorizationHeader.replace("Bearer ", "");
         Long userId = jwtService.extractClaim(token, claims -> claims.get("userId", Long.class));
-
         ProfileDto createdProfile = profileService.createProfile(profileDto, userId);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdProfile);
-    
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasAnyAuthority('USER', 'ADMIN')")
     public ResponseEntity<ProfileDto> updateProfileById(@PathVariable Long id, @RequestBody ProfileDto profileDto) {
         Optional<ProfileDto> optionalProfile = profileService.getProfileById(id);
         if (optionalProfile.isPresent()) {
@@ -76,14 +77,16 @@ public class ProfileController {
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAuthority('ADMIN')")
-    public ResponseEntity<Void> deleteProfileById(@PathVariable Long id) {
+    public ResponseEntity<Void> deleteProfile(@PathVariable Long id,   @RequestHeader("Authorization") String authorizationHeader) {
         Optional<ProfileDto> optionalProfile = profileService.getProfileById(id);
+        String token = authorizationHeader.replace("Bearer ", "");
+        Long userId = jwtService.extractClaim(token, claims -> claims.get("userId", Long.class));
+
         if (optionalProfile.isPresent()) {
-            profileService.deleteProfileById(id);
+            profileService.deleteProfile(id, userId);
             return ResponseEntity.noContent().build();
         } else {
             return ResponseEntity.notFound().build();
         }
     }
-
 }

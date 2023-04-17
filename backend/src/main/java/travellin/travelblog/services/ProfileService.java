@@ -52,6 +52,7 @@ public class ProfileService {
         profile.setUser(user);
         user.setProfile(profile);
         Profile savedProfile = profileRepository.save(profile);
+        userRepository.save(user);
         return ProfileDto.fromEntity(savedProfile);
     }
 
@@ -73,7 +74,10 @@ public class ProfileService {
         return ProfileDto.fromEntity(updatedProfile);
     }
 
-    public void deleteProfileById(Long id) {
+    public void deleteProfile(Long id, Long userId) {
         profileRepository.deleteById(id);
+        User user = userRepository.findById(userId).get();
+        user.setProfile(null);
+        userRepository.save(user);
     }
 }

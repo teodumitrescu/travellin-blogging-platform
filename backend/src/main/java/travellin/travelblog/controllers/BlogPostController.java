@@ -1,31 +1,26 @@
 package travellin.travelblog.controllers;
 
+import java.time.LocalDateTime;
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import travellin.travelblog.dto.BlogPostDto;
 import travellin.travelblog.security.config.JwtService;
 import travellin.travelblog.services.BlogPostService;
-import travellin.travelblog.services.DestinationService;
-import travellin.travelblog.services.TagService;
-import travellin.travelblog.services.UserService;
 
 @RestController
 @RequestMapping("/blogposts")
 public class BlogPostController {
 
     private final BlogPostService blogPostService;
-	private final TagService tagService;
-    private final DestinationService destinationService;
-    private final UserService userService;
     private final JwtService jwtService;
 
     @Autowired
-    public BlogPostController(BlogPostService blogPostService, TagService tagService, DestinationService destinationService, UserService userService, JwtService jwtService) {
+    public BlogPostController(BlogPostService blogPostService, JwtService jwtService) {
         this.blogPostService = blogPostService;
-		this.tagService = tagService;
-        this.destinationService = destinationService;
-        this.userService = userService;
         this.jwtService = jwtService;
     }
 
@@ -54,21 +49,43 @@ public class BlogPostController {
 
     @GetMapping("/{id}")
     public ResponseEntity<BlogPostDto> getBlogPostById(@PathVariable Long id) throws Exception {
-        BlogPostDto blogPost = blogPostService.getBlogPostById(id);
-        return ResponseEntity.ok(blogPost);
+        try {
+            BlogPostDto blogPost = blogPostService.getBlogPostById(id);
+            return ResponseEntity.ok(blogPost);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+        }
+    }
+
+    @GetMapping("")
+    public ResponseEntity<List<BlogPostDto>> getAllBlogPosts() throws Exception {
+        try {
+            List<BlogPostDto> blogPosts = blogPostService.getAllBlogPosts();
+            return ResponseEntity.ok(blogPosts);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+        }
     }
 
     @PostMapping("/{blogPostId}/tags/{tagId}")
     public ResponseEntity<Void> addTagToBlogPost(@PathVariable Long blogPostId, @PathVariable Long tagId) throws Exception {
-        blogPostService.addTagToBlogPost(blogPostId, tagId);
-        return ResponseEntity.ok().build();
+        try {
+            blogPostService.addTagToBlogPost(blogPostId, tagId);
+            return ResponseEntity.ok().build();
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
+        }
     }
 
     @DeleteMapping("/{blogPostId}/tags/{tagId}")
     public ResponseEntity<Void> removeTagFromBlogPost(@PathVariable Long blogPostId, @PathVariable Long tagId) throws Exception {
-        blogPostService.removeTagFromBlogPost(blogPostId, tagId);
-        return ResponseEntity.ok().build();
-}
+        try {
+            blogPostService.removeTagFromBlogPost(blogPostId, tagId);
+            return ResponseEntity.ok().build();
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
+        }
+    }
 
     // @GetMapping("/tags/{tagId}")
     // public ResponseEntity<List<BlogPostDto>> getAllBlogPostsByTag(@PathVariable Long tagId) throws Exception {
