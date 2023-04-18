@@ -1,52 +1,61 @@
 package travellin.travelblog.services;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Service;
 
 import travellin.travelblog.dto.DestinationDto;
 import travellin.travelblog.entities.BlogPost;
 import travellin.travelblog.entities.Destination;
-import travellin.travelblog.repositories.BlogPostRepository;
 import travellin.travelblog.repositories.DestinationRepository;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class DestinationService {
 
     private final DestinationRepository destinationRepository;
-    private final BlogPostRepository blogPostRepository;
 
     @Autowired
-    public DestinationService(DestinationRepository destinationRepository, BlogPostRepository blogPostRepository) {
+    public DestinationService(DestinationRepository destinationRepository) {
         this.destinationRepository = destinationRepository;
-        this.blogPostRepository = blogPostRepository;
     }
     
-    public DestinationDto createDestination(Long postId, DestinationDto destinationDTO) {
-        Destination destination = new Destination(
-                destinationDTO.getName(),
-                destinationDTO.getDescription(),
-                destinationDTO.getCountry(),
-                destinationDTO.getRegion()
-        );
-        List<BlogPost> blogPostList = new ArrayList<>();
-        blogPostList.add(blogPostRepository.findById(postId).get());
-        destination.setPosts(blogPostList);
-        Destination createdDestination = destinationRepository.save(destination);
-        return DestinationDto.fromEntity(createdDestination);
+    public DestinationDto createDestination(DestinationDto destinationDto) {
+        Optional<Destination> destinationOptional = destinationRepository.findByNameAndCountry(destinationDto.getName(), destinationDto.getCountry());
+        if (destinationOptional.isPresent()) {
+            return DestinationDto.fromEntity(destinationOptional.get());
+        } else {
+            Destination destination = new Destination(
+                    destinationDto.getName(),
+                    "",
+                    destinationDto.getCountry(),
+                    ""
+            );
+            List<BlogPost> blogPostList = new ArrayList<>();
+            destination.setPosts(blogPostList);
+            Destination createdDestination = destinationRepository.save(destination);
+            return DestinationDto.fromEntity(createdDestination);
+        }
     }
     
-    public DestinationDto updateDestination(Long id, DestinationDto destinationDTO) throws Exception {
+    public DestinationDto updateDestination(Long id, DestinationDto destinationDto) throws Exception {
         Destination destination = destinationRepository.findById(id)
                 .orElseThrow(() -> new Exception("Destination not found with id " + id));
-    
-        destination.setName(destinationDTO.getName());
-        destination.setDescription(destinationDTO.getDescription());
-        destination.setCountry(destinationDTO.getCountry());
-        destination.setRegion(destinationDTO.getRegion());
+        
+        if (destinationDto.getName() != null) {
+            destination.setName(destinationDto.getName());
+        }
+        // if (destinationDto.getDescription() != null) {
+        //     destination.setDescription(destinationDto.getDescription());
+        // }
+        if (destinationDto.getCountry() != null) {
+            destination.setCountry(destinationDto.getCountry());
+        }
+        // if (destinationDto.getRegion() != null) {
+        //     destination.setRegion(destinationDto.getRegion());
+        // }
     
         Destination savedDestination = destinationRepository.save(destination);
         return DestinationDto.fromEntity(savedDestination);
@@ -63,37 +72,12 @@ public class DestinationService {
         return DestinationDto.fromEntity(destination);
     }
     
-    // public List<BlogPost> getBlogPostsForDestination(Long destinationId) throws Exception {
-    //     Optional<Destination> destination = destinationRepository.findById(destinationId);
-    //     if (destination.isPresent()) {
-    //         return destination.get().getPosts();
-    //     } else {
-    //         throw new Exception("Destination not found with id " + destinationId);
-    //     }
-    // }
-    
-    public List<DestinationDto> getDestinationsByCountry(String country) {
-        List<Destination> destinations = destinationRepository.findByCountry(country);
-        return DestinationDto.fromEntityList(destinations);
-    }
-    
-    public List<DestinationDto> getDestinationsByRegion(String region) {
-        List<Destination> destinations = destinationRepository.findByRegion(region);
-        return DestinationDto.fromEntityList(destinations);
-    }
-    
-    public List<DestinationDto> searchDestinations(String keyword) {
-        List<Destination> destinations = destinationRepository.findByNameContainingIgnoreCase(keyword);
-        return DestinationDto.fromEntityList(destinations);
-    }
-    
     public void deleteDestination(Long id) throws Exception {
         try {
             Destination destination = destinationRepository.findById(id)
                     .orElseThrow(() -> new Exception("Destination not found with id " + id));
-    
             destinationRepository.delete(destination);
-        } catch (DataAccessException e) {
+        } catch (Exception e) {
             throw new Exception("Error deleting destination with id " + id, e);
         }
     }

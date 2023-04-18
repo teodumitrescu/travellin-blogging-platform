@@ -22,4 +22,6 @@ public interface BlogPostRepository extends JpaRepository<BlogPost, Long> {
 
     List<BlogPost> findByAuthorId(Long id);
 
+    List<BlogPost> findAllByDestinationId(Long destinationId);
+
 }

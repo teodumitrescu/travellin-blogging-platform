@@ -82,26 +82,79 @@ public class BlogPostService {
 			createdTagsDtos.add(createdTag);
 		}
 		
-		DestinationDto createdDestinationDto = destinationService.createDestination(newPostId, blogPostDto.getDestination());
+		DestinationDto createdDestinationDto = destinationService.createDestination(blogPostDto.getDestination());
 		BlogPost finalBlogPost = blogPostRepository.findById(newPostId).get();
 		finalBlogPost.setDestination(destinationRepository.findById(createdDestinationDto.getId()).get());
+		addBlogPostToDestination(newPostId, createdDestinationDto.getId());
 
         return BlogPostDto.fromEntity(blogPostRepository.save(blogPost));
     }
 
-    public BlogPost updateBlogPost(Long id, String title, String content, LocalDateTime updatedAt, List<Image> images, Destination destination, List<Tag> tags) throws Exception {
+    public BlogPostDto updateBlogPost(Long id, BlogPostDto postDto) throws Exception {
 		BlogPost blogPost = blogPostRepository.findById(id)
-		.orElse(null);
+		.orElseThrow(() -> new Exception("BlogPost not found with id " + id));
 
-	if (blogPost == null) {
-		throw new Exception("BlogPost not found: " + id);
-}        blogPost.setTitle(title);
-        blogPost.setContent(content);
-        blogPost.setUpdatedAt(updatedAt);
-        blogPost.setImages(images);
-        blogPost.setTags(tags);
-        blogPost.setDestination(destination);
-        return blogPostRepository.save(blogPost);
+		if (postDto.getTitle() != null) {
+			blogPost.setTitle(postDto.getTitle());
+		}
+		if(postDto.getContent() != null) {
+			blogPost.setContent(postDto.getContent());
+		}
+        
+		if(postDto.getImages() != null) {
+			//delete current images
+			List<Image> images = blogPost.getImages();
+			for (Image image : images) {
+				removeImageFromBlogPost(blogPost.getId(), image.getId());
+			}
+
+			//create and add images
+			List<ImageDto> createdImagesDtos = new ArrayList<>();
+			for (ImageDto imageDto : postDto.getImages()) {
+				ImageDto createdImage = imageService.createImage(id, imageDto);
+				addImageToBlogPost(id, createdImage.getId());
+				createdImagesDtos.add(createdImage);
+			}
+		}
+		
+		if (postDto.getTags() != null) {
+			//remove current tags
+			List<Tag> tags = blogPost.getTags();
+			for(Tag tag : tags) {
+				List<BlogPost> posts = tag.getPosts();
+				posts.remove(blogPost);
+				tag.setPosts(posts);
+				tagRepository.save(tag);
+			}
+
+			//create and add tags
+			List<TagDto> createdTagsDtos = new ArrayList<>(); 
+			for (TagDto tagDto : postDto.getTags()) {
+				TagDto createdTag = tagService.createTag(tagDto);
+				addTagToBlogPost(id, createdTag.getId());
+				createdTagsDtos.add(createdTag);
+			}
+		}
+		
+		if (postDto.getDestination() != null) {
+			//remove current destination
+			Destination destination = blogPost.getDestination();
+			if(destination != null) {
+				List<BlogPost> posts = destination.getPosts();
+				posts.remove(blogPost);
+				destination.setPosts(posts);
+				destinationRepository.save(destination);
+			}
+			
+			//add new destination
+			DestinationDto createdDestinationDto = destinationService.createDestination(postDto.getDestination());
+			BlogPost finalBlogPost = blogPostRepository.findById(id).get();
+			finalBlogPost.setDestination(destinationRepository.findById(createdDestinationDto.getId()).get());
+			addBlogPostToDestination(id, createdDestinationDto.getId());
+			blogPost.setUpdatedAt(LocalDateTime.now());
+		}
+		
+        return BlogPostDto.fromEntity(blogPostRepository.save(blogPost));
     }
 
     public List<BlogPostDto> getAllBlogPostsByUserId(Long userId) {
@@ -146,7 +199,11 @@ public class BlogPostService {
 		Tag tag = tagRepository.findById(tagId)
 				.orElseThrow(() -> new Exception("Tag not found with id " + tagId));
 	
-		blogPost.removeTag(tag);
+		
+		List<Tag> tags = blogPost.getTags();
+		tags.remove(tag);
+		blogPost.setTags(tags);
+		blogPost.setUpdatedAt(LocalDateTime.now());
 		blogPostRepository.save(blogPost);
 	}
 
@@ -170,25 +227,80 @@ public class BlogPostService {
 		images.remove(image);
 		post.setImages(images);
 		post.setUpdatedAt(LocalDateTime.now());
+		imageRepository.delete(image);
+		blogPostRepository.save(post);
+	}
+
+	public void addBlogPostToDestination(Long blogPostId, Long destinationId) throws Exception {
+		BlogPost post = blogPostRepository.findById(blogPostId)
+		.orElseThrow(() -> new Exception("Blog post not found with id " + blogPostId));;
+		Destination destination = destinationRepository.findById(destinationId)
+		.orElseThrow(() -> new Exception("Destination not found with id " + destinationId));
+		post.setDestination(destination);
+		post.setUpdatedAt(LocalDateTime.now());
+		blogPostRepository.save(post);
+
+		
+		List<BlogPost> posts = destination.getPosts();
+		posts.add(post);
+		destination.setPosts(posts);
+		destinationRepository.save(destination);
+	}
+
+	public void removeBlogPostFromDestination(Long blogPostId, Long destinationId) throws Exception {
+		BlogPost post = blogPostRepository.findById(blogPostId)
+				.orElseThrow(() -> new Exception("Blog post not found with id " + blogPostId));
+	
+		Destination destination = destinationRepository.findById(destinationId)
+				.orElseThrow(() -> new Exception("Destination not found with id " + destinationId));
+		
+		List<BlogPost> posts = destination.getPosts();
+		posts.remove(post);
+		destination.setPosts(posts);
+		destinationRepository.save(destination);
+		post.setDestination(null);
+		post.setUpdatedAt(LocalDateTime.now());
 		blogPostRepository.save(post);
 	}
 	
-	// public List<BlogPostDto> getAllBlogPostsByTagName(String tagName) {
-	// 	Tag tag = tagRepository.findByName(tagName)
-	// 			.orElseThrow(() -> new RuntimeException("Tag not found: " + tagName));
-	// 	List<BlogPost> blogPosts = blogPostRepository.findByTags(tag);
-	// 	return blogPosts.stream()
-	// 			.map(BlogPostDto::fromEntity)
-	// 			.collect(Collectors.toList());
-	// }
-	
-	// public List<BlogPostDto> getAllBlogPostsByDestinationName(String destinationName) {
-	// 	Destination destination = destinationRepository.findByName(destinationName)
-	// 			.orElseThrow(() -> new RuntimeException("Destination not found: " + destinationName));
-	// 	List<BlogPost> blogPosts = blogPostRepository.findByDestination(destination);
-	// 	return blogPosts.stream()
-	// 			.map(BlogPostDto::fromEntity)
-	// 			.collect(Collectors.toList());
-	// }
+	public void deleteBlogPost(Long id) throws Exception {
+        BlogPost post = blogPostRepository.findById(id)
+                .orElseThrow(() -> new Exception("BlogPost not found: " + id));
+		
+		// Remove blogPost from destination
+		Destination destination = post.getDestination();
+		if(destination != null) {
+			List<BlogPost> posts = destination.getPosts();
+			posts.remove(post);
+			destination.setPosts(posts);
+			destinationRepository.save(destination);
+		}
+
+		// Remove blogPost from tags
+		List<Tag> tags = post.getTags();
+		for(Tag tag : tags) {
+			List<BlogPost> posts = tag.getPosts();
+			posts.remove(post);
+			tag.setPosts(posts);
+			tagRepository.save(tag);
+		}
+
+		//delete associated images
+		List<Image> images = post.getImages();
+		for (Image image : images) {
+			removeImageFromBlogPost(post.getId(), image.getId());
+		}
+		
+        blogPostRepository.deleteById(id);
+    }
+
+	public void removeDestinationfromBlogPosts(Long destId) {
+		List<BlogPost> posts = blogPostRepository.findAllByDestinationId(destId);
+		for (BlogPost post : posts) {
+			post.setDestination(null);
+			post.setUpdatedAt(LocalDateTime.now());
+			blogPostRepository.save(post);
+		}
+	}
 	
 }

@@ -1,11 +1,13 @@
 package travellin.travelblog.controllers;
 
-import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import travellin.travelblog.dto.BlogPostDto;
 import travellin.travelblog.security.config.JwtService;
@@ -25,6 +27,7 @@ public class BlogPostController {
     }
 
     @PostMapping
+    @PreAuthorize("hasAnyAuthority('USER', 'ADMIN')")
     public ResponseEntity<BlogPostDto> createBlogPost(@RequestBody BlogPostDto blogPostDto, @RequestHeader("Authorization") String authorizationHeader) throws Exception {
         String token = authorizationHeader.replace("Bearer ", "");
         Long userId = jwtService.extractClaim(token, claims -> claims.get("userId", Long.class));
@@ -32,22 +35,27 @@ public class BlogPostController {
         return ResponseEntity.ok(createdBlogPost);
     }
 
-    // @PutMapping("/{id}")
-    // public ResponseEntity<BlogPostDto> updateBlogPost(@PathVariable Long id, @RequestBody BlogPostDto blogPostDto) throws Exception {
-    //     LocalDateTime now = LocalDateTime.now();
-    //     BlogPost updatedBlogPost = blogPostService.updateBlogPost(
-    //             id,
-    //             blogPostDto.getTitle(),
-    //             blogPostDto.getContent(),
-    //             now,
-    //             blogPostDto.getImages(),
-    //             blogPostDto.getDestination() != null ? new Destination(blogPostDto.getDestination().getId(), blogPostDto.getDestination().getName()) : null,
-    //             blogPostDto.getTags() != null ? blogPostDto.getTags().stream().map(tagDto -> new Tag(tagDto.getId(), tagDto.getName())).collect(Collectors.toList()) : null
-    //     );
-    //     return ResponseEntity.ok(mapToDto(updatedBlogPost));
-    // }
+    @DeleteMapping("/{id}")
+    @PreAuthorize("hasAnyAuthority('USER', 'ADMIN')")
+    public ResponseEntity<?> deleteBlogPost(@PathVariable Long id) throws Exception {
+        try {
+            blogPostService.deleteBlogPost(id);
+            return ResponseEntity.noContent().build();
+        } catch (Exception e) {
+            Map<String, String> errorMap = new HashMap<>();
+            errorMap.put("error", e.getMessage());
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(errorMap);
+        }
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<BlogPostDto> updateBlogPost(@PathVariable Long id, @RequestBody BlogPostDto blogPostDto) throws Exception {
+        BlogPostDto updatedBlogPost = blogPostService.updateBlogPost(id, blogPostDto);
+        return ResponseEntity.ok(updatedBlogPost);
+    }
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasAnyAuthority('USER', 'ADMIN')")
     public ResponseEntity<BlogPostDto> getBlogPostById(@PathVariable Long id) throws Exception {
         try {
             BlogPostDto blogPost = blogPostService.getBlogPostById(id);
@@ -58,6 +66,7 @@ public class BlogPostController {
     }
 
     @GetMapping("")
+    @PreAuthorize("hasAnyAuthority('USER', 'ADMIN')")
     public ResponseEntity<List<BlogPostDto>> getAllBlogPosts() throws Exception {
         try {
             List<BlogPostDto> blogPosts = blogPostService.getAllBlogPosts();
@@ -67,7 +76,8 @@ public class BlogPostController {
         }
     }
 
-    @PostMapping("/{blogPostId}/tags/{tagId}")
+    @PostMapping("/{blogPostId}/addtags/{tagId}")
+    @PreAuthorize("hasAnyAuthority('USER', 'ADMIN')")
     public ResponseEntity<Void> addTagToBlogPost(@PathVariable Long blogPostId, @PathVariable Long tagId) throws Exception {
         try {
             blogPostService.addTagToBlogPost(blogPostId, tagId);
@@ -77,7 +87,8 @@ public class BlogPostController {
         }
     }
 
-    @DeleteMapping("/{blogPostId}/tags/{tagId}")
+    @PostMapping("/{blogPostId}/removetags/{tagId}")
+    @PreAuthorize("hasAnyAuthority('USER', 'ADMIN')")
     public ResponseEntity<Void> removeTagFromBlogPost(@PathVariable Long blogPostId, @PathVariable Long tagId) throws Exception {
         try {
             blogPostService.removeTagFromBlogPost(blogPostId, tagId);
@@ -86,26 +97,4 @@ public class BlogPostController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
         }
     }
-
-    // @GetMapping("/tags/{tagId}")
-    // public ResponseEntity<List<BlogPostDto>> getAllBlogPostsByTag(@PathVariable Long tagId) throws Exception {
-    //     Tag tag = tagService.getTagById(tagId)
-    //         .orElseThrow(() -> new Exception("Tag not found with id " + tagId));
-    //     List<BlogPostDto> blogPostDtos = blogPostService.getAllBlogPostsByTag(tag).stream()
-    //         .map(BlogPostDto::new)
-    //         .collect(Collectors.toList());
-    //     return ResponseEntity.ok(blogPostDtos);
-    // }
-
-    // @GetMapping("/destinations/{destinationId}")
-    // public ResponseEntity<List<BlogPostDto>> getAllBlogPostsByDestination(@PathVariable Long destinationId) throws Exception {
-    //     Destination destination = destinationService.getDestinationById(destinationId);
-    //     if (destination == null) {
-    //         throw new Exception("Destination not found with id " + destinationId);
-    //     }
-    //     List<BlogPostDto> blogPostDtos = blogPostService.getAllBlogPostsByDestination(destination).stream()
-    //         .map(BlogPostDto::new)
-    //         .collect(Collectors.toList());
-    //     return ResponseEntity.ok(blogPostDtos);
-    // }
 }
