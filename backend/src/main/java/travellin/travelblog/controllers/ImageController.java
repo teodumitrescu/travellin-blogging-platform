@@ -10,7 +10,9 @@ import travellin.travelblog.dto.ImageDto;
 import travellin.travelblog.services.BlogPostService;
 import travellin.travelblog.services.ImageService;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/images")
@@ -38,30 +40,33 @@ public class ImageController {
 
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyAuthority('USER', 'ADMIN')")
-    public ResponseEntity<ImageDto> getImageById(@PathVariable Long id) {
+    public ResponseEntity<?> getImageById(@PathVariable Long id) {
         try {
             ImageDto imageDto = imageService.getImageById(id);
             return ResponseEntity.ok(imageDto);
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+            Map<String, String> errorMap = new HashMap<>();
+            errorMap.put("Message", e.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorMap);
         }
     }
 
     @PostMapping("/post={postId}")
     @PreAuthorize("hasAnyAuthority('USER', 'ADMIN')")
-    public ResponseEntity<ImageDto> createImage(@PathVariable Long postId, @RequestBody ImageDto imageDto) {
+    public ResponseEntity<?> createImage(@PathVariable Long postId, @RequestBody ImageDto imageDto) {
         try {
             ImageDto createdImage = imageService.createImage(postId, imageDto);
             blogPostService.addImageToBlogPost(postId, createdImage.getId());
             return ResponseEntity.status(HttpStatus.CREATED).body(createdImage);
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
-        }
+            Map<String, String> errorMap = new HashMap<>();
+            errorMap.put("Message", e.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorMap);        }
     }
 
     @PutMapping("/{id}")
     @PreAuthorize("hasAnyAuthority('USER', 'ADMIN')")
-    public ResponseEntity<ImageDto> updateImageById(
+    public ResponseEntity<?> updateImageById(
             @PathVariable Long id,
             @RequestBody ImageDto imageDto
     ) throws Exception {
@@ -69,20 +74,24 @@ public class ImageController {
         ImageDto updatedImage = imageService.updateImage(id, imageDto);
         return ResponseEntity.ok(updatedImage);
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
-        }
+            Map<String, String> errorMap = new HashMap<>();
+            errorMap.put("Message", e.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorMap);        }
     }
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAnyAuthority('USER', 'ADMIN')")
-    public ResponseEntity<Void> deleteImageById(@PathVariable Long id) throws Exception {
+    public ResponseEntity<?> deleteImageById(@PathVariable Long id) throws Exception {
         try {
             Long postId = imageService.getImageById(id).getPostId();
             blogPostService.removeImageFromBlogPost(postId, id);
             imageService.deleteImage(id);
-            return ResponseEntity.noContent().build();
+            Map<String, String> errorMap = new HashMap<>();
+            errorMap.put("Message", "Image " + id + " deleted successfully.");
+            return ResponseEntity.status(HttpStatus.NO_CONTENT).body(errorMap);
         } catch (Exception e) {
-            return ResponseEntity.notFound().build();
-        }
+            Map<String, String> errorMap = new HashMap<>();
+            errorMap.put("Message", e.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorMap);        }
     }
 }

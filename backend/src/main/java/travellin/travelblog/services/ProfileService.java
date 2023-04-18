@@ -29,20 +29,22 @@ public class ProfileService {
         return ProfileDto.fromEntityList(profiles);
     }
 
-    public Optional<ProfileDto> getProfileById(Long id) {
+    public ProfileDto getProfileById(Long id) throws Exception {
         Optional<Profile> profile = profileRepository.findById(id);
         if (profile.isPresent()) {
-            return Optional.of(ProfileDto.fromEntity(profile.get()));
+            return ProfileDto.fromEntity(profile.get());
+        } else {
+            throw new Exception("Profile not found: " + id);
         }
-        return Optional.empty();
     }
 
-    public Optional<ProfileDto> getProfileByUserId(Long userId) {
+    public ProfileDto getProfileByUserId(Long userId) throws Exception {
         Optional<Profile> profile = profileRepository.findByUserId(userId);
         if (profile.isPresent()) {
-            return Optional.of(ProfileDto.fromEntity(profile.get()));
+            return ProfileDto.fromEntity(profile.get());
+        } else {
+            throw new Exception("Profile not found: " + userId);
         }
-        return Optional.empty();
     }
 
     public ProfileDto createProfile(ProfileDto profileDto, Long userId) {
@@ -56,28 +58,39 @@ public class ProfileService {
         return ProfileDto.fromEntity(savedProfile);
     }
 
-    public ProfileDto updateProfile(Long id, ProfileDto newProfile) {
-        Profile profileToUpdate = profileRepository.findById(id).get();
-        if (newProfile.getFirstName() != null) {
-            profileToUpdate.setFirstName(newProfile.getFirstName());
+    public ProfileDto updateProfile(Long id, ProfileDto newProfile) throws Exception {
+        Optional<Profile> profile = profileRepository.findById(id);
+        if(profile.isPresent()) {
+            Profile profileToUpdate = profile.get();
+            if (newProfile.getFirstName() != null) {
+                profileToUpdate.setFirstName(newProfile.getFirstName());
+            }
+            if (newProfile.getLastName() != null) {
+                profileToUpdate.setLastName(newProfile.getLastName());
+            }
+            if (newProfile.getBio() != null) {
+                profileToUpdate.setBio(newProfile.getBio());
+            }
+            if (newProfile.getProfileImageUrl() != null) {
+                profileToUpdate.setProfileImageUrl(newProfile.getProfileImageUrl());
+            }
+            Profile updatedProfile = profileRepository.save(profileToUpdate);
+            return ProfileDto.fromEntity(updatedProfile);
+        } else {
+            throw new Exception("Profile not found: " + id);
         }
-        if (newProfile.getLastName() != null) {
-            profileToUpdate.setLastName(newProfile.getLastName());
-        }
-        if (newProfile.getBio() != null) {
-            profileToUpdate.setBio(newProfile.getBio());
-        }
-        if (newProfile.getProfileImageUrl() != null) {
-            profileToUpdate.setProfileImageUrl(newProfile.getProfileImageUrl());
-        }
-        Profile updatedProfile = profileRepository.save(profileToUpdate);
-        return ProfileDto.fromEntity(updatedProfile);
+        
     }
 
-    public void deleteProfile(Long id, Long userId) {
-        profileRepository.deleteById(id);
-        User user = userRepository.findById(userId).get();
-        user.setProfile(null);
-        userRepository.save(user);
+    public void deleteProfile(Long id, Long userId) throws Exception {
+        Optional<Profile> optionalProfile = profileRepository.findById(id);
+        if (optionalProfile.isPresent()) {
+            profileRepository.deleteById(id);
+            User user = userRepository.findById(userId).get();
+            user.setProfile(null);
+            userRepository.save(user);
+        } else {
+            throw new Exception("Profile not found: " + id);
+        }
     }
 }

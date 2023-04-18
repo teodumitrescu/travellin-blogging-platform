@@ -40,7 +40,9 @@ public class BlogPostController {
     public ResponseEntity<?> deleteBlogPost(@PathVariable Long id) throws Exception {
         try {
             blogPostService.deleteBlogPost(id);
-            return ResponseEntity.noContent().build();
+            Map<String, String> errorMap = new HashMap<>();
+            errorMap.put("Message", "Post " + id + " deleted successfully.");
+            return ResponseEntity.status(HttpStatus.NO_CONTENT).body(errorMap);
         } catch (Exception e) {
             Map<String, String> errorMap = new HashMap<>();
             errorMap.put("error", e.getMessage());
@@ -49,20 +51,28 @@ public class BlogPostController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<BlogPostDto> updateBlogPost(@PathVariable Long id, @RequestBody BlogPostDto blogPostDto) throws Exception {
-        BlogPostDto updatedBlogPost = blogPostService.updateBlogPost(id, blogPostDto);
-        return ResponseEntity.ok(updatedBlogPost);
+    public ResponseEntity<?> updateBlogPost(@PathVariable Long id, @RequestBody BlogPostDto blogPostDto) throws Exception {
+        try {
+            BlogPostDto updatedBlogPost = blogPostService.updateBlogPost(id, blogPostDto);
+            return ResponseEntity.ok(updatedBlogPost);
+        } catch (Exception e) {
+            Map<String, String> errorMap = new HashMap<>();
+            errorMap.put("Message", e.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorMap);
+        }
+
     }
 
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyAuthority('USER', 'ADMIN')")
-    public ResponseEntity<BlogPostDto> getBlogPostById(@PathVariable Long id) throws Exception {
+    public ResponseEntity<?> getBlogPostById(@PathVariable Long id) throws Exception {
         try {
             BlogPostDto blogPost = blogPostService.getBlogPostById(id);
             return ResponseEntity.ok(blogPost);
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
-        }
+            Map<String, String> errorMap = new HashMap<>();
+            errorMap.put("Message", e.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorMap);        }
     }
 
     @GetMapping("")
@@ -78,23 +88,25 @@ public class BlogPostController {
 
     @PostMapping("/{blogPostId}/addtags/{tagId}")
     @PreAuthorize("hasAnyAuthority('USER', 'ADMIN')")
-    public ResponseEntity<Void> addTagToBlogPost(@PathVariable Long blogPostId, @PathVariable Long tagId) throws Exception {
+    public ResponseEntity<?> addTagToBlogPost(@PathVariable Long blogPostId, @PathVariable Long tagId) throws Exception {
         try {
             blogPostService.addTagToBlogPost(blogPostId, tagId);
             return ResponseEntity.ok().build();
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
-        }
+            Map<String, String> errorMap = new HashMap<>();
+            errorMap.put("Message", e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorMap);        }
     }
 
     @PostMapping("/{blogPostId}/removetags/{tagId}")
     @PreAuthorize("hasAnyAuthority('USER', 'ADMIN')")
-    public ResponseEntity<Void> removeTagFromBlogPost(@PathVariable Long blogPostId, @PathVariable Long tagId) throws Exception {
+    public ResponseEntity<?> removeTagFromBlogPost(@PathVariable Long blogPostId, @PathVariable Long tagId) throws Exception {
         try {
             blogPostService.removeTagFromBlogPost(blogPostId, tagId);
             return ResponseEntity.ok().build();
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
-        }
+            Map<String, String> errorMap = new HashMap<>();
+            errorMap.put("Message", e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorMap);        }
     }
 }

@@ -10,7 +10,9 @@ import travellin.travelblog.dto.UserDto;
 import travellin.travelblog.security.config.JwtService;
 import travellin.travelblog.services.UserService;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/users")
@@ -27,12 +29,14 @@ public class UserController {
 
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyAuthority('USER', 'ADMIN')")
-    public ResponseEntity<UserDto> getUserById(@PathVariable Long id) {
+    public ResponseEntity<?> getUserById(@PathVariable Long id) {
         try {
             UserDto userResponse = userService.getUserById(id);
             return ResponseEntity.ok(userResponse);
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+            Map<String, String> errorMap = new HashMap<>();
+            errorMap.put("Message", e.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorMap);
         }
     }
 
@@ -49,8 +53,12 @@ public class UserController {
     @GetMapping("")
     @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<List<UserDto>> getAllUsers() {
+        try {
         List<UserDto> usersResponse = userService.getAllUsers();
         return ResponseEntity.ok(usersResponse);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+        }
     }
 
     @PutMapping("/{id}/password")
@@ -64,19 +72,25 @@ public class UserController {
         UserDto userResponse = userService.updateUserPassword(id, password);
         return ResponseEntity.ok(userResponse);
     } else {
-        return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        Map<String, String> errorMap = new HashMap<>();
+        errorMap.put("Message", "You are not allowed to change the password for this user");
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(errorMap);
     }
 }
 
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAuthority('ADMIN')")
-    public ResponseEntity<Void> deleteUserById(@PathVariable Long id) {
+    public ResponseEntity<?> deleteUserById(@PathVariable Long id) {
         try {
             userService.deleteUserById(id);
-            return ResponseEntity.noContent().build();
+            Map<String, String> errorMap = new HashMap<>();
+            errorMap.put("Message", "user " + id + " deleted successfully.");
+            return ResponseEntity.status(HttpStatus.NO_CONTENT).body(errorMap);
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+            Map<String, String> errorMap = new HashMap<>();
+            errorMap.put("error", e.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorMap);
         }
     }
 }

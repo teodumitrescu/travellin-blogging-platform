@@ -57,7 +57,7 @@ public class ImageService {
         Image createdImage = imageRepository.save(image);
         return ImageDto.fromEntity(createdImage);
         } else {
-            throw new Exception("Post not found:  " + blogPostId);
+            throw new Exception("Post to create image for not found:  " + blogPostId);
         }
     }
 

@@ -10,8 +10,9 @@ import travellin.travelblog.dto.ProfileDto;
 import travellin.travelblog.security.config.JwtService;
 import travellin.travelblog.services.ProfileService;
 
+import java.util.HashMap;
 import java.util.List;
-import java.util.Optional;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/profiles")
@@ -29,64 +30,82 @@ public class ProfileController {
     @GetMapping
     @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<List<ProfileDto>> getAllProfiles() {
-        return ResponseEntity.ok(profileService.getAllProfiles());
+        try {
+            return ResponseEntity.ok(profileService.getAllProfiles());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+        }
     }
 
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyAuthority('USER', 'ADMIN')")
     public ResponseEntity<?> getProfileById(@PathVariable Long id) {
-        Optional<ProfileDto> optionalProfile = profileService.getProfileById(id);
-        if (optionalProfile.isPresent()) {
-            return ResponseEntity.ok(optionalProfile);
-        } else {
-            return ResponseEntity.notFound().build();
+        try {
+            ProfileDto profile = profileService.getProfileById(id);
+            return ResponseEntity.ok(profile);
+        } catch (Exception e) {
+            Map<String, String> errorMap = new HashMap<>();
+            errorMap.put("Message", e.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorMap);
         }
     }
 
     @GetMapping("/user={userId}")
     @PreAuthorize("hasAnyAuthority('USER', 'ADMIN')")
     public ResponseEntity<?> getProfileByUserId(@PathVariable Long userId) {
-        Optional<ProfileDto> optionalProfile = profileService.getProfileByUserId(userId);
-        if (optionalProfile.isPresent()) {
-            return ResponseEntity.ok(optionalProfile.get());
-        } else {
-            return ResponseEntity.notFound().build();
+        try {
+            ProfileDto profile = profileService.getProfileByUserId(userId);
+            return ResponseEntity.ok(profile);
+        } catch (Exception e) {
+            Map<String, String> errorMap = new HashMap<>();
+            errorMap.put("Message", e.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorMap);
         }
     }
 
     @PostMapping("/create")
     @PreAuthorize("hasAnyAuthority('USER', 'ADMIN')")
     public ResponseEntity<ProfileDto> createProfile(@RequestBody ProfileDto profileDto,  @RequestHeader("Authorization") String authorizationHeader) throws Exception {
-        String token = authorizationHeader.replace("Bearer ", "");
-        Long userId = jwtService.extractClaim(token, claims -> claims.get("userId", Long.class));
-        ProfileDto createdProfile = profileService.createProfile(profileDto, userId);
-        return ResponseEntity.status(HttpStatus.CREATED).body(createdProfile);
+        try {
+            String token = authorizationHeader.replace("Bearer ", "");
+            Long userId = jwtService.extractClaim(token, claims -> claims.get("userId", Long.class));
+            ProfileDto createdProfile = profileService.createProfile(profileDto, userId);
+            return ResponseEntity.status(HttpStatus.CREATED).body(createdProfile);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).build();
+        }
     }
 
     @PutMapping("/{id}")
     @PreAuthorize("hasAnyAuthority('USER', 'ADMIN')")
-    public ResponseEntity<ProfileDto> updateProfileById(@PathVariable Long id, @RequestBody ProfileDto profileDto) {
-        Optional<ProfileDto> optionalProfile = profileService.getProfileById(id);
-        if (optionalProfile.isPresent()) {
+    public ResponseEntity<?> updateProfileById(@PathVariable Long id, @RequestBody ProfileDto profileDto) {
+        try {
             ProfileDto updatedProfileDto = profileService.updateProfile(id, profileDto);
             return ResponseEntity.ok(updatedProfileDto);
-        } else {
-            return ResponseEntity.notFound().build();
+        }catch (Exception e) {
+            Map<String, String> errorMap = new HashMap<>();
+            errorMap.put("Message", e.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorMap);
         }
     }
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAuthority('ADMIN')")
-    public ResponseEntity<Void> deleteProfile(@PathVariable Long id,   @RequestHeader("Authorization") String authorizationHeader) {
-        Optional<ProfileDto> optionalProfile = profileService.getProfileById(id);
-        String token = authorizationHeader.replace("Bearer ", "");
-        Long userId = jwtService.extractClaim(token, claims -> claims.get("userId", Long.class));
-
-        if (optionalProfile.isPresent()) {
+    public ResponseEntity<?> deleteProfile(@PathVariable Long id,   @RequestHeader("Authorization") String authorizationHeader) {
+        try {
+            String token = authorizationHeader.replace("Bearer ", "");
+            Long userId = jwtService.extractClaim(token, claims -> claims.get("userId", Long.class));
+    
             profileService.deleteProfile(id, userId);
-            return ResponseEntity.noContent().build();
-        } else {
-            return ResponseEntity.notFound().build();
+            Map<String, String> errorMap = new HashMap<>();
+            errorMap.put("Message", "Profile " + id + " deleted successfully.");
+            return ResponseEntity.status(HttpStatus.NO_CONTENT).body(errorMap);
+            
+        } catch (Exception e) {
+            Map<String, String> errorMap = new HashMap<>();
+            errorMap.put("Message", e.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorMap);
         }
+
     }
 }

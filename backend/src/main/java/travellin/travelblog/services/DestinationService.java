@@ -47,15 +47,9 @@ public class DestinationService {
         if (destinationDto.getName() != null) {
             destination.setName(destinationDto.getName());
         }
-        // if (destinationDto.getDescription() != null) {
-        //     destination.setDescription(destinationDto.getDescription());
-        // }
         if (destinationDto.getCountry() != null) {
             destination.setCountry(destinationDto.getCountry());
         }
-        // if (destinationDto.getRegion() != null) {
-        //     destination.setRegion(destinationDto.getRegion());
-        // }
     
         Destination savedDestination = destinationRepository.save(destination);
         return DestinationDto.fromEntity(savedDestination);

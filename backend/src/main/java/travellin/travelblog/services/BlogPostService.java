@@ -207,10 +207,15 @@ public class BlogPostService {
 		blogPostRepository.save(blogPost);
 	}
 
-	public void addImageToBlogPost(Long blogPostId, Long imageId) {
-		BlogPost post = blogPostRepository.findById(blogPostId).get();
+	public void addImageToBlogPost(Long blogPostId, Long imageId) throws Exception {
+		BlogPost post = blogPostRepository.findById(blogPostId)
+		.orElseThrow(() -> new Exception("Blog post not found with id " + blogPostId));
+
+		Image image = imageRepository.findById(imageId)
+		.orElseThrow(() -> new Exception("Image not found with id " + imageId));
+
 		List<Image> images = post.getImages();
-		images.add(imageRepository.findById(imageId).get());
+		images.add(image);
 		post.setImages(images);
 		post.setUpdatedAt(LocalDateTime.now());
 		blogPostRepository.save(post);
@@ -236,6 +241,7 @@ public class BlogPostService {
 		.orElseThrow(() -> new Exception("Blog post not found with id " + blogPostId));;
 		Destination destination = destinationRepository.findById(destinationId)
 		.orElseThrow(() -> new Exception("Destination not found with id " + destinationId));
+		
 		post.setDestination(destination);
 		post.setUpdatedAt(LocalDateTime.now());
 		blogPostRepository.save(post);

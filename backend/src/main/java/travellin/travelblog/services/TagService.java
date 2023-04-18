@@ -12,7 +12,6 @@ import travellin.travelblog.repositories.TagRepository;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 public class TagService {
@@ -26,9 +25,7 @@ public class TagService {
 
     public List<TagDto> getAllTags() {
         List<Tag> tags = tagRepository.findAll();
-        return tags.stream()
-                .map(TagDto::fromEntity)
-                .collect(Collectors.toList());
+        return TagDto.fromEntityList(tags);
     }
 
     public TagDto createTag(TagDto tagDto) {

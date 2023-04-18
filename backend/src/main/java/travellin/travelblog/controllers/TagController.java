@@ -1,6 +1,8 @@
 package travellin.travelblog.controllers;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -50,18 +52,20 @@ public class TagController {
 
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyAuthority('USER', 'ADMIN')")
-    public ResponseEntity<TagDto> getTagById(@PathVariable Long id) {
+    public ResponseEntity<?> getTagById(@PathVariable Long id) {
         try {
             TagDto tagDto = tagService.getTagById(id);
             return ResponseEntity.ok(tagDto);
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+            Map<String, String> errorMap = new HashMap<>();
+            errorMap.put("Message", e.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorMap);
         }
     }
 
     @PutMapping("/{id}")
     @PreAuthorize("hasAnyAuthority('USER', 'ADMIN')")
-    public ResponseEntity<TagDto> updateTagById(
+    public ResponseEntity<?> updateTagById(
             @PathVariable Long id,
             @RequestBody TagDto tagDto
     ) throws Exception {
@@ -69,21 +73,27 @@ public class TagController {
         TagDto updatedTag = tagService.updateTag(id, tagDto);
         return ResponseEntity.ok(updatedTag);
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+            Map<String, String> errorMap = new HashMap<>();
+            errorMap.put("Message", e.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorMap);
         }
     }
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAuthority('ADMIN')")
-    public ResponseEntity<Void> deleteTag(@PathVariable Long id) {
+    public ResponseEntity<?> deleteTag(@PathVariable Long id) {
         try {
             for (BlogPostDto post : tagService.getPostsById(id)) {
                 blogPostService.removeTagFromBlogPost(post.getId(), id);
             }
             tagService.deleteTag(id);
-            return ResponseEntity.noContent().build();
+            Map<String, String> errorMap = new HashMap<>();
+            errorMap.put("Message", "Tag " + id + " deleted successfully.");
+            return ResponseEntity.status(HttpStatus.NO_CONTENT).body(errorMap);
         } catch (Exception e) {
-            return ResponseEntity.notFound().build();
+            Map<String, String> errorMap = new HashMap<>();
+            errorMap.put("Message", e.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorMap);
         }
     }
 }

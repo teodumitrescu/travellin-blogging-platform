@@ -10,7 +10,9 @@ import travellin.travelblog.dto.DestinationDto;
 import travellin.travelblog.services.BlogPostService;
 import travellin.travelblog.services.DestinationService;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/destinations")
@@ -27,24 +29,26 @@ public class DestinationController {
 
     @GetMapping
     @PreAuthorize("hasAnyAuthority('USER', 'ADMIN')")
-    public ResponseEntity<List<DestinationDto>> getAllDestinations() {
+    public ResponseEntity<?> getAllDestinations() {
         try {
         List<DestinationDto> destinationDtos = destinationService.getAllDestinations();
         return ResponseEntity.ok(destinationDtos);
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
-        }
+            Map<String, String> errorMap = new HashMap<>();
+            errorMap.put("Message", e.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorMap);        }
     }
 
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyAuthority('USER', 'ADMIN')")
-    public ResponseEntity<DestinationDto> getDestinationById(@PathVariable Long id) throws Exception {
+    public ResponseEntity<?> getDestinationById(@PathVariable Long id) throws Exception {
         try {
             DestinationDto destinationDto = destinationService.getDestinationById(id);
             return ResponseEntity.ok(destinationDto);
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
-        }
+            Map<String, String> errorMap = new HashMap<>();
+            errorMap.put("Message", e.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorMap);        }
     }
 
     @PostMapping("")
@@ -60,25 +64,29 @@ public class DestinationController {
 
     @PutMapping("/{id}")
     @PreAuthorize("hasAnyAuthority('USER', 'ADMIN')")
-    public ResponseEntity<DestinationDto> updateDestination(@PathVariable Long id, @RequestBody DestinationDto destinationDto) throws Exception {
+    public ResponseEntity<?> updateDestination(@PathVariable Long id, @RequestBody DestinationDto destinationDto) throws Exception {
         try {
             DestinationDto updatedDestination = destinationService.updateDestination(id, destinationDto);
             return ResponseEntity.ok(updatedDestination);
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
-        }
+            Map<String, String> errorMap = new HashMap<>();
+            errorMap.put("Message", e.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorMap);        }
     }
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAuthority('ADMIN')")
-    public ResponseEntity<Void> deleteDestination(@PathVariable Long id) throws Exception {
+    public ResponseEntity<?> deleteDestination(@PathVariable Long id) throws Exception {
         try {
             blogPostService.removeDestinationfromBlogPosts(id);
             destinationService.deleteDestination(id);
-            return ResponseEntity.noContent().build();
+            Map<String, String> errorMap = new HashMap<>();
+            errorMap.put("Message", "Destination " + id + " deleted successfully.");
+            return ResponseEntity.status(HttpStatus.NO_CONTENT).body(errorMap);
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
-        }
+            Map<String, String> errorMap = new HashMap<>();
+            errorMap.put("Message", e.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorMap);        }
     }
 
 }
