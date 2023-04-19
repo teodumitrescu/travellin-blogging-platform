@@ -14,7 +14,7 @@ function Navbar({ isLoggedIn, handleLogout }) {
   return (
     <nav className='navbar'>
       <div className='navbar__brand'>
-        <Link to='/'>BLOG AROUND THE GLOBE</Link>
+        <Link to='/home'>BLOG AROUND THE GLOBE</Link>
       </div>
       {isLoggedIn && (
         <ul className='navbar__list'>

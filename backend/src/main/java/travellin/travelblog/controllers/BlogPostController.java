@@ -86,6 +86,17 @@ public class BlogPostController {
         }
     }
 
+    @GetMapping("/user={id}")
+    @PreAuthorize("hasAnyAuthority('USER', 'ADMIN')")
+    public ResponseEntity<List<BlogPostDto>> getAllBlogPostsByUserId(@PathVariable Long id) throws Exception {
+        try {
+            List<BlogPostDto> blogPosts = blogPostService.getAllBlogPostsByUserId(id);
+            return ResponseEntity.ok(blogPosts);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+        }
+    }
+
     @PostMapping("/{blogPostId}/addtags/{tagId}")
     @PreAuthorize("hasAnyAuthority('USER', 'ADMIN')")
     public ResponseEntity<?> addTagToBlogPost(@PathVariable Long blogPostId, @PathVariable Long tagId) throws Exception {

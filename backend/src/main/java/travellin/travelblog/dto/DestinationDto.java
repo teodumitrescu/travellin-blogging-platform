@@ -15,9 +15,8 @@ public class DestinationDto {
 
     private Long id;
     private String name;
-    //private String description;
     private String country;
-    //private String region;
+	private Integer numberOfPosts;
 
     public DestinationDto() {}
 
@@ -25,9 +24,8 @@ public class DestinationDto {
 		return new DestinationDto(
 			destination.getId(),
 			destination.getName(),
-			//destination.getDescription(),
-			destination.getCountry()
-			//destination.getRegion()
+			destination.getCountry(),
+			destination.getPosts().size()
 		);
 	}
 	
