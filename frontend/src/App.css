@@ -64,6 +64,9 @@ nav {
   position: relative;
   display: flex;
   padding-top: 3rem;
+  padding-left: 5rem;
+  padding-right: 3rem;
+  background-color: transparent;
 }
 .home-bannerImage-container {
   position: absolute;
@@ -71,10 +74,12 @@ nav {
   right: -170px;
   z-index: -2;
   max-width: 700px;
+  background-color: transparent;
 }
 .home-image-section {
   max-width: 600px;
   flex: 1;
+  background-color: transparent;
 }
 .home-text-section {
   flex: 1;

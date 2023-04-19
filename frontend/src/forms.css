@@ -3,18 +3,19 @@
   padding: 0;
   box-sizing: border-box;
   font-family: "Reem Kufi", sans-serif !important;
+  color:rgb(95, 93, 153);
 }
 
 .auth-form-container {
-  background-color: white;
+  background-color: rgb(190, 190, 194);
   max-width: 500px;
   width: 100%;
   margin-top: 1rem;
   display: flex;
   align-items: center;
-  padding: 0.5rem;
+  border: 3px;
   border-radius: 1.5rem;
-  box-shadow: 0 0 10px rgba(0,0,0,0.1);
+  box-shadow: 0 0 20px rgba(0,0,0,0.1);
 }
 .auth-form-container input {
   flex: 1;
@@ -24,6 +25,7 @@
   font-size: 1rem;
   padding: 0.5rem 1rem;
   border-radius: 1rem;
+  background-color: rgb(249, 249, 249);
 }
 
 .auth{
@@ -38,16 +40,16 @@
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  height: 100vh;
 }
 
 .auth a{
-  color: white;
+  color: rgb(95, 93, 153);
 }
 
 .auth h1{
   margin-bottom:1rem;
   font-size:2rem;
+  color: rgb(38, 42, 100);
 }
 
 .auth form{
@@ -80,8 +82,8 @@
 
 .secondary-button {
   background-color: transparent;
-  border: 1px solid white;
-  color: white;
+  border: 1px solid rgb(38, 42, 100);;
+  color: rgb(38, 42, 100);;
   transition: all 0.3s ease;
   border-radius: 1rem;
   cursor: pointer;
@@ -91,6 +93,64 @@
 }
 
 .secondary-button:hover {
-  background-color: white;
-  color: black;
+  color: azure;
+  background-color: rgb(38, 42, 100);
+}
+
+.login-container {
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #fafafa;
+  background-image: url("top-view-travel-elements-collection.jpg");
+  background-size: cover;
+}
+
+.login-card {
+  width: 90%;
+  max-width: 500px;
+  border-radius: 8px;
+  padding: 32px;
+  background-color: #fff;
+  box-shadow: 0px 4px 16px rgba(0, 0, 0, 0.1);
+}
+
+.login-header {
+  font-size: 32px;
+  font-weight: 600;
+  margin-bottom: 24px;
+  color: #212121;
+  text-align: center;
+}
+
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.login-input-container {
+  display: flex;
+  align-items: center;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  height: 48px;
+  padding: 0 16px;
+}
+
+.login-input {
+  flex: 1;
+  border: none;
+  outline: none;
+  font-size: 16px;
+  color: #212121;
+  background-color: transparent;
+}
+
+.login-button {
+  height: 48px;
+  background-color: #212121;
+  color: #fff;
+  border: none;
 }

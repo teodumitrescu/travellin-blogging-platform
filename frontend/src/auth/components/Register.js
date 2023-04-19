@@ -47,8 +47,8 @@ function Register() {
   };
 
   return (
-    <div className="home-container" style={{height: '100vh', overflow: 'hidden'}}>
-      <div className='center'>
+    <div className="login-container" style={{height: '100vh', overflow: 'hidden'}}>
+      <div className='login-card'>
         <div className='auth'>
           <h1>Register</h1>
           {error && <div className='auth__error'>{error}</div>}

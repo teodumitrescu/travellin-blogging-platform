@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import '../../forms.css'
 import '../../App.css'
 import axios from 'axios';
+import jwt_decode from 'jwt-decode';
 
 function Login() {
   const [username, setUsername] = useState('')
@@ -10,15 +11,19 @@ function Login() {
   const [error, setError] = useState('')
   const navigate = useNavigate()
 
+  const API_URL = "http://localhost:8080/api/auth"
+
   const login = (e) => {
     e.preventDefault()
-
-    axios.post('/api/login', { username, password })
+  
+    axios.post(API_URL + "/authenticate", { username, password })
       .then((response) => {
         const data = response.data;
         if (data.token) {
           localStorage.setItem('token', data.token)
-          navigate.push('/profile')
+          const decodedToken = jwt_decode(data.token)
+          localStorage.setItem('userId', decodedToken.userId)
+          navigate('/home')
         } else {
           setError(data.message)
         }
@@ -29,8 +34,8 @@ function Login() {
   }
 
   return (
-    <div className="home-container" style={{ height: '100vh', overflow: 'hidden' }}>
-      <div className='center'>
+    <div className="login-container" style={{ height: '100vh', overflow: 'hidden' }}>
+      <div className='login-card'>
         <div className='auth'>
           <h1>Log in</h1>
           {error && <div className='auth__error'>{error}</div>}
