@@ -45,7 +45,7 @@ function Destinations() {
               <td>{destination.id}</td>
               <td>{destination.name}</td>
               <td>{destination.country}</td>
-			  <td>{destination.numberOfPosts}</td>
+			  <td>{destination.num}</td>
             </tr>
           ))}
         </tbody>

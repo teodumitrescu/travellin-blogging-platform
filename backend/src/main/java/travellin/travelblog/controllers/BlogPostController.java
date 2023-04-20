@@ -46,7 +46,7 @@ public class BlogPostController {
         } catch (Exception e) {
             Map<String, String> errorMap = new HashMap<>();
             errorMap.put("error", e.getMessage());
-            return ResponseEntity.status(HttpStatus.CONFLICT).body(errorMap);
+            return ResponseEntity.status(HttpStatus.NO_CONTENT).body(null);
         }
     }
 
@@ -119,5 +119,57 @@ public class BlogPostController {
             Map<String, String> errorMap = new HashMap<>();
             errorMap.put("Message", e.getMessage());
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorMap);        }
+    }
+
+    @GetMapping("/search/author?username={text}")
+    @PreAuthorize("hasAnyAuthority('USER', 'ADMIN')")
+    public ResponseEntity<List<BlogPostDto>> getAllBlogPostsByUsernameContaining(@PathVariable String text) throws Exception {
+        try {
+            List<BlogPostDto> blogPosts = blogPostService.getAllBlogPostsByUsernameContaining(text);
+            return ResponseEntity.ok(blogPosts);
+        } catch (Exception e) {
+            Map<String, String> errorMap = new HashMap<>();
+            errorMap.put("Message", e.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+        }
+    }
+
+    @GetMapping("/search/title?query={text}")
+    @PreAuthorize("hasAnyAuthority('USER', 'ADMIN')")
+    public ResponseEntity<List<BlogPostDto>> getAllBlogPostsByTitleContaining(@PathVariable String text) throws Exception {
+        try {
+            List<BlogPostDto> blogPosts = blogPostService.getAllBlogPostsByTitleContaining(text);
+            return ResponseEntity.ok(blogPosts);
+        } catch (Exception e) {
+            Map<String, String> errorMap = new HashMap<>();
+            errorMap.put("Message", e.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+        }
+    }
+
+    // @PostMapping("/search/tag?name={text}")
+    // @PreAuthorize("hasAnyAuthority('USER', 'ADMIN')")
+    // public ResponseEntity<List<BlogPostDto>> getAllBlogPostsByTag(@PathVariable String text) throws Exception {
+    //     try {
+    //         List<BlogPostDto> blogPosts = blogPostService.getAllBlogPostsByTag(text);
+    //         return ResponseEntity.ok(blogPosts);
+    //     } catch (Exception e) {
+    //         Map<String, String> errorMap = new HashMap<>();
+    //         errorMap.put("Message", e.getMessage());
+    //         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+    //     }
+    // }
+
+    @GetMapping("/search/destination?name={text}")
+    @PreAuthorize("hasAnyAuthority('USER', 'ADMIN')")
+    public ResponseEntity<List<BlogPostDto>> getAllBlogPostsByDestinationNameContaining(@PathVariable String text) throws Exception {
+        try {
+            List<BlogPostDto> blogPosts = blogPostService.getAllBlogPostsByDestinationNameContaining(text);
+            return ResponseEntity.ok(blogPosts);
+        } catch (Exception e) {
+            Map<String, String> errorMap = new HashMap<>();
+            errorMap.put("Message", e.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+        }
     }
 }

@@ -85,7 +85,6 @@ public class ImageController {
         try {
             Long postId = imageService.getImageById(id).getPostId();
             blogPostService.removeImageFromBlogPost(postId, id);
-            imageService.deleteImage(id);
             Map<String, String> errorMap = new HashMap<>();
             errorMap.put("Message", "Image " + id + " deleted successfully.");
             return ResponseEntity.status(HttpStatus.NO_CONTENT).body(errorMap);

@@ -24,4 +24,10 @@ public interface BlogPostRepository extends JpaRepository<BlogPost, Long> {
 
     List<BlogPost> findAllByDestinationId(Long destinationId);
 
+    List<BlogPost> findAllByAuthorUsernameContainingIgnoreCase(String text);
+
+    List<BlogPost> findAllByTitleContainingIgnoreCase(String text);
+    
+    List<BlogPost> findAllByDestinationNameContainingIgnoreCase(String text);
+
 }

@@ -215,7 +215,7 @@ public class BlogPostService {
 		.orElseThrow(() -> new Exception("Image not found with id " + imageId));
 
 		List<Image> images = post.getImages();
-		images.add(image);
+		images.add(imageRepository.findById(imageId).get());
 		post.setImages(images);
 		post.setUpdatedAt(LocalDateTime.now());
 		blogPostRepository.save(post);
@@ -308,5 +308,20 @@ public class BlogPostService {
 			blogPostRepository.save(post);
 		}
 	}
+
+	public List<BlogPostDto> getAllBlogPostsByUsernameContaining(String text) {
+        List<BlogPost> blogPosts = blogPostRepository.findAllByAuthorUsernameContainingIgnoreCase(text);
+        return BlogPostDto.fromEntityList(blogPosts);
+    }
+
+	public List<BlogPostDto> getAllBlogPostsByTitleContaining(String text) {
+        List<BlogPost> blogPosts = blogPostRepository.findAllByTitleContainingIgnoreCase(text);
+        return BlogPostDto.fromEntityList(blogPosts);
+    }
+
+	public List<BlogPostDto> getAllBlogPostsByDestinationNameContaining(String text) {
+        List<BlogPost> blogPosts = blogPostRepository.findAllByDestinationNameContainingIgnoreCase(text);
+        return BlogPostDto.fromEntityList(blogPosts);
+    }
 	
 }
