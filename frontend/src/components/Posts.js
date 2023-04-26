@@ -5,11 +5,13 @@ import Navbar from './Navbar';
 
 function Posts() {
   const [posts, setPosts] = useState([]);
-  const [searchField, setSearchField] = useState('');
+  const [searchField, setSearchField] = useState('*');
   const [searchCriteria, setSearchCriteria] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const token = localStorage.getItem('token');
-  const [isLoggedIn, setIsLoggedIn] = useState(true); // Change this to false if you want to test the navbar as if the user is not logged in
+  const [isLoggedIn, setIsLoggedIn] = useState(true);
+  const [searchCount, setSearchCount] = useState(0);
+
 
   const handleLogout = () => {
     setIsLoggedIn(false);
@@ -19,33 +21,35 @@ function Posts() {
     setIsLoading(true);
     try {
       let response;
-      if (searchCriteria === 'author') {
-        response = await axios.get(`http://localhost:8080/blogposts/search/author?username=${searchField}`, {
+	  if (searchField === '') {
+        response = await axios.get('http://localhost:8080/blogposts', {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        });
+	  } else if (searchCriteria === 'author') {
+        response = await axios.get(`http://localhost:8080/blogposts/search/author/${searchField}`, {
           headers: {
             Authorization: `Bearer ${token}`
           }
         });
       } else if (searchCriteria === 'title') {
-        response = await axios.get(`http://localhost:8080/blogposts/search/title?query=${searchField}`, {
+        response = await axios.get(`http://localhost:8080/blogposts/search/title/${searchField}`, {
           headers: {
             Authorization: `Bearer ${token}`
           }
         });
-      } else if (searchCriteria === 'tag') {
-        response = await axios.get(`http://localhost:8080/blogposts/search/tag?name=${searchField}`, {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        });
-      } else if (searchCriteria === 'destination') {
-        response = await axios.get(`http://localhost:8080/blogposts/search/destination?name=${searchField}`, {
+	} else if (searchCriteria === 'destination') {
+        response = await axios.get(`http://localhost:8080/blogposts/search/destination/${searchField}`, {
           headers: {
             Authorization: `Bearer ${token}`
           }
         });
       }
+
       if (response && response.data) {
 		setPosts(response.data);
+		setSearchCount(count => count + 1);
 	  }
     } catch (error) {
       console.error(error);
@@ -54,9 +58,9 @@ function Posts() {
     }
   };
 
-  useEffect(() => {
-    handleSearch();
-  }, [searchField, searchCriteria, token]);
+//   useEffect(() => {
+//     handleSearch();
+//   }, [searchField, searchCriteria, token]);
 
   return (
 	<div>
@@ -69,7 +73,6 @@ function Posts() {
 		<select id="searchCriteria" value={searchCriteria} onChange={(e) => setSearchCriteria(e.target.value)}>
 		  <option value="title">Title</option>
 		  <option value="author">Author</option>
-		  <option value="tag">Tag</option>
 		  <option value="destination">Destination</option>
 		</select>
 		<input type="text" value={searchField} onChange={(e) => setSearchField(e.target.value)} />

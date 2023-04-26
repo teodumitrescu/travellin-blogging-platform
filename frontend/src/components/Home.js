@@ -26,7 +26,7 @@ function Home() {
             Was your trip a blast?<br></br>
             Share it so the others can experience it too!
           </p>
-          <Link to="/Login" style={{textDecoration: 'none' }}>
+          <Link to="/Posts" style={{textDecoration: 'none' }}>
               <button className="secondary-button">
                 Get started <FiArrowRight />{" "}
               </button>

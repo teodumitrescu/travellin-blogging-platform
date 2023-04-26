@@ -51,6 +51,7 @@ public class BlogPostController {
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasAnyAuthority('USER', 'ADMIN')")
     public ResponseEntity<?> updateBlogPost(@PathVariable Long id, @RequestBody BlogPostDto blogPostDto) throws Exception {
         try {
             BlogPostDto updatedBlogPost = blogPostService.updateBlogPost(id, blogPostDto);
@@ -121,7 +122,7 @@ public class BlogPostController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorMap);        }
     }
 
-    @GetMapping("/search/author?username={text}")
+    @GetMapping("/search/author/{text}")
     @PreAuthorize("hasAnyAuthority('USER', 'ADMIN')")
     public ResponseEntity<List<BlogPostDto>> getAllBlogPostsByUsernameContaining(@PathVariable String text) throws Exception {
         try {
@@ -134,7 +135,7 @@ public class BlogPostController {
         }
     }
 
-    @GetMapping("/search/title?query={text}")
+    @GetMapping("/search/title/{text}")
     @PreAuthorize("hasAnyAuthority('USER', 'ADMIN')")
     public ResponseEntity<List<BlogPostDto>> getAllBlogPostsByTitleContaining(@PathVariable String text) throws Exception {
         try {
@@ -147,7 +148,7 @@ public class BlogPostController {
         }
     }
 
-    // @PostMapping("/search/tag?name={text}")
+    // @PostMapping("/search/tag/{text}")
     // @PreAuthorize("hasAnyAuthority('USER', 'ADMIN')")
     // public ResponseEntity<List<BlogPostDto>> getAllBlogPostsByTag(@PathVariable String text) throws Exception {
     //     try {
@@ -160,7 +161,7 @@ public class BlogPostController {
     //     }
     // }
 
-    @GetMapping("/search/destination?name={text}")
+    @GetMapping("/search/destination/{text}")
     @PreAuthorize("hasAnyAuthority('USER', 'ADMIN')")
     public ResponseEntity<List<BlogPostDto>> getAllBlogPostsByDestinationNameContaining(@PathVariable String text) throws Exception {
         try {
