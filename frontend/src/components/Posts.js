@@ -5,7 +5,7 @@ import Navbar from './Navbar';
 
 function Posts() {
   const [posts, setPosts] = useState([]);
-  const [searchField, setSearchField] = useState('*');
+  const [searchField, setSearchField] = useState('');
   const [searchCriteria, setSearchCriteria] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const token = localStorage.getItem('token');
@@ -57,10 +57,6 @@ function Posts() {
       setIsLoading(false);
     }
   };
-
-//   useEffect(() => {
-//     handleSearch();
-//   }, [searchField, searchCriteria, token]);
 
   return (
 	<div>

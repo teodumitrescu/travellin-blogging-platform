@@ -65,6 +65,11 @@ public class DestinationService {
                 .orElseThrow(() -> new Exception("Destination not found with id " + id));
         return DestinationDto.fromEntity(destination);
     }
+
+    public List<DestinationDto> getDestinationByCountryContaining(String name) throws Exception {
+        List<Destination> destinations = destinationRepository.findAllByCountryContainingIgnoreCase(name);
+        return DestinationDto.fromEntityList(destinations);
+    }
     
     public void deleteDestination(Long id) throws Exception {
         try {

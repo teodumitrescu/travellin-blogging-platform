@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import '../tables.css'
 import Navbar from './Navbar';
+import ReactModal from 'react-modal';
 
 function Destinations() {
   const [destinations, setDestinations] = useState([]);
@@ -12,6 +13,9 @@ function Destinations() {
   const [isAdding, setIsAdding] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
+  const [searchField, setSearchField] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [modalIsOpen, setModalIsOpen] = useState(false);
 
   const token = localStorage.getItem('token');
 
@@ -31,6 +35,10 @@ function Destinations() {
     setIsEditing(!isEditing);
   };
 
+  const handleModal = () => {
+    setModalIsOpen(!modalIsOpen);
+  };
+
   const handleSaveDestination = () => {
     const data = { name, country };
     axios.post('http://localhost:8080/destinations', data, {
@@ -43,6 +51,7 @@ function Destinations() {
         setName('');
         setCountry('');
         setIsAdding(false);
+        handleModal();
       })
       .catch(error => console.error(error));
   };
@@ -59,6 +68,7 @@ function Destinations() {
       setName('');
       setCountry('');
       setIsEditing(false);
+      
       axios.get('http://localhost:8080/destinations', {
       headers: {
         Authorization: `Bearer ${token}`
@@ -66,6 +76,7 @@ function Destinations() {
       })
       .then(response => {
         setDestinations(response.data);
+        handleModal();
       })
       .catch(error => console.error(error));
       
@@ -91,11 +102,40 @@ function Destinations() {
       })
       .then(response => {
         setDestinations(response.data);
+        handleModal();
       })
       .catch(error => console.error(error));
       
     })
       .catch(error => console.error(error));
+  };
+
+  const handleSearch = async () => {
+    setIsLoading(true);
+    try {
+      let response;
+	  if (searchField === '') {
+        response = await axios.get('http://localhost:8080/destinations', {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        });
+	  } else {
+        response = await axios.get(`http://localhost:8080/destinations/search/${searchField}`, {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        });
+      }
+
+    if (response && response.data) {
+		    setDestinations(response.data);
+	  }
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   useEffect(() => {
@@ -115,7 +155,36 @@ function Destinations() {
 		{isLoggedIn && (
         <Navbar isLoggedIn={isLoggedIn} handleLogout={handleLogout} />
       )}
+
+      <div>
+        <ReactModal isOpen={modalIsOpen} style={{
+            content: {
+              width: '30%',
+              height: '30%',
+              margin: 'auto',
+              top: 0,
+              bottom: 0,
+              left: 0,
+              right: 0,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              backgroundColor: '#f8f8f8',
+              flexDirection: 'column'
+            }
+          }}
+        >
+          <h2>Action successful!</h2>
+          <button onClick={handleModal}>Dismiss</button>
+        </ReactModal>
+      </div>
+
       <h2>Destinations</h2>
+      <div>
+		    <label htmlFor="searchField">Search by Country:</label>
+		    <input type="text" value={searchField} onChange={(e) => setSearchField(e.target.value)} />
+		    <button onClick={handleSearch}>Search</button>
+	    </div>
       <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
       {!isAdding ? (
           <button onClick={handleAddDestination}>Add</button>

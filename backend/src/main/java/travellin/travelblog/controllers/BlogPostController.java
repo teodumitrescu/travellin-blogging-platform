@@ -148,19 +148,6 @@ public class BlogPostController {
         }
     }
 
-    // @PostMapping("/search/tag/{text}")
-    // @PreAuthorize("hasAnyAuthority('USER', 'ADMIN')")
-    // public ResponseEntity<List<BlogPostDto>> getAllBlogPostsByTag(@PathVariable String text) throws Exception {
-    //     try {
-    //         List<BlogPostDto> blogPosts = blogPostService.getAllBlogPostsByTag(text);
-    //         return ResponseEntity.ok(blogPosts);
-    //     } catch (Exception e) {
-    //         Map<String, String> errorMap = new HashMap<>();
-    //         errorMap.put("Message", e.getMessage());
-    //         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
-    //     }
-    // }
-
     @GetMapping("/search/destination/{text}")
     @PreAuthorize("hasAnyAuthority('USER', 'ADMIN')")
     public ResponseEntity<List<BlogPostDto>> getAllBlogPostsByDestinationNameContaining(@PathVariable String text) throws Exception {

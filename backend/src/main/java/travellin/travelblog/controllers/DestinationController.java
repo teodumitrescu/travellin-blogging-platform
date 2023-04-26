@@ -51,6 +51,18 @@ public class DestinationController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorMap);        }
     }
 
+    @GetMapping("/search/{name}")
+    @PreAuthorize("hasAnyAuthority('USER', 'ADMIN')")
+    public ResponseEntity<?> getDestinationByCountryContaining(@PathVariable String name) throws Exception {
+        try {
+            List<DestinationDto> destinationDto = destinationService.getDestinationByCountryContaining(name);
+            return ResponseEntity.ok(destinationDto);
+        } catch (Exception e) {
+            Map<String, String> errorMap = new HashMap<>();
+            errorMap.put("Message", e.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorMap);        }
+    }
+
     @PostMapping("")
     @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<DestinationDto> createDestination(@RequestBody DestinationDto destinationDto) {

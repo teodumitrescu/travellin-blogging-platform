@@ -12,9 +12,11 @@ public interface DestinationRepository extends JpaRepository<Destination, Long> 
 
     List<Destination> findByCountry(String country);
 
-	List<Destination> findByNameContainingIgnoreCase(String name);
+	// List<Destination> findByNameContainingIgnoreCase(String name);
 
     Optional<Destination> findByNameAndCountry(String name, String country);
+
+    List<Destination> findAllByCountryContainingIgnoreCase(String name);
 
 
 }
